@@ -1,2 +1,2 @@
-# wasker-api
-A Task Tracker System for support team
+# wasker
+A Task Tracker System for Support team
