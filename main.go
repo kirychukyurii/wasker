@@ -1,4 +1,4 @@
-package wasker
+package main
 
 import "github.com/kirychukyurii/wasker/cmd"
 

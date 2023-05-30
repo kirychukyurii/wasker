@@ -2,8 +2,12 @@ package serve
 
 import (
 	"context"
+	"github.com/kirychukyurii/wasker/internal/pkg"
+	"github.com/kirychukyurii/wasker/internal/pkg/logger"
 	"github.com/spf13/cobra"
 	"go.uber.org/fx"
+	"go.uber.org/fx/fxevent"
+	"go.uber.org/zap"
 )
 
 func init() {
@@ -17,21 +21,38 @@ var Command = &cobra.Command{
 	SilenceUsage: true,
 	PreRun:       func(cmd *cobra.Command, args []string) {},
 	Run: func(cmd *cobra.Command, args []string) {
-		fx.New(Module, fx.NopLogger).Run()
+		f := fx.New(
+			Module,
+			fx.WithLogger(
+				func(log logger.Logger) fxevent.Logger {
+					var l fxevent.ZapLogger
+
+					l.UseLogLevel(zap.DebugLevel)
+					l.Logger = log.DesugarZap
+
+					return &l
+				},
+			),
+		)
+
+		f.Run()
 	},
 }
 
 var Module = fx.Options(
+	pkg.Module,
 	fx.Invoke(runApplication),
 )
 
-func runApplication(lifecycle fx.Lifecycle) {
+func runApplication(lifecycle fx.Lifecycle, logger logger.Logger) {
 	lifecycle.Append(fx.Hook{
 		OnStart: func(context.Context) error {
+			logger.Zap.Info("Starting application")
 
 			return nil
 		},
 		OnStop: func(context.Context) error {
+			logger.Zap.Info("Stopping application")
 
 			return nil
 		},
