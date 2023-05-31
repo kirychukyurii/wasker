@@ -1,0 +1,24 @@
+---
+http:
+  host: 0.0.0.0
+  port: 2223
+
+database:
+  name: tasker
+  host: postgres-service.postgres.svc.cluster.local
+  port: 5432
+  username: tasker
+  password: tasker
+  max_opened_connections: 150
+  max_idle_connections: 50
+  max_connection_lifetime: 7200
+
+auth:
+  token_ttl: 7200
+  username: root
+  password: root
+
+log:
+  level: debug
+  format: console
+  directory: ./logs

@@ -2,16 +2,22 @@ package serve
 
 import (
 	"context"
+	"github.com/kirychukyurii/wasker/internal/config"
 	"github.com/kirychukyurii/wasker/internal/pkg"
 	"github.com/kirychukyurii/wasker/internal/pkg/logger"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxevent"
 	"go.uber.org/zap"
 )
 
 func init() {
-	_ = Command.PersistentFlags()
+	pf := Command.PersistentFlags()
+
+	pf.StringVarP(&config.Path, "config", "c", "config/config.yml",
+		"this parameter is used to start the service application")
 }
 
 var Command = &cobra.Command{
@@ -19,27 +25,33 @@ var Command = &cobra.Command{
 	Short:        "",
 	Example:      "",
 	SilenceUsage: true,
-	PreRun:       func(cmd *cobra.Command, args []string) {},
+	PreRun: func(cmd *cobra.Command, args []string) {
+		viper.SetConfigFile(config.Path)
+		if err := viper.ReadInConfig(); err != nil {
+			panic(errors.Wrap(err, "failed to read config"))
+		}
+	},
 	Run: func(cmd *cobra.Command, args []string) {
-		f := fx.New(
+		app := fx.New(
 			Module,
 			fx.WithLogger(
-				func(log logger.Logger) fxevent.Logger {
+				func(logger logger.Logger) fxevent.Logger {
 					var l fxevent.ZapLogger
 
 					l.UseLogLevel(zap.DebugLevel)
-					l.Logger = log.DesugarZap
+					l.Logger = logger.DesugarZap
 
 					return &l
 				},
 			),
 		)
 
-		f.Run()
+		app.Run()
 	},
 }
 
 var Module = fx.Options(
+	config.Module,
 	pkg.Module,
 	fx.Invoke(runApplication),
 )
