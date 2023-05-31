@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/kirychukyurii/wasker/internal/config"
 	"github.com/kirychukyurii/wasker/internal/pkg"
+	"github.com/kirychukyurii/wasker/internal/pkg/db"
 	"github.com/kirychukyurii/wasker/internal/pkg/logger"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -56,7 +57,7 @@ var Module = fx.Options(
 	fx.Invoke(runApplication),
 )
 
-func runApplication(lifecycle fx.Lifecycle, logger logger.Logger) {
+func runApplication(lifecycle fx.Lifecycle, logger logger.Logger, db db.Database) {
 	lifecycle.Append(fx.Hook{
 		OnStart: func(context.Context) error {
 			logger.Zap.Info("Starting application")
@@ -65,6 +66,7 @@ func runApplication(lifecycle fx.Lifecycle, logger logger.Logger) {
 		},
 		OnStop: func(context.Context) error {
 			logger.Zap.Info("Stopping application")
+			db.Pool.Close()
 
 			return nil
 		},

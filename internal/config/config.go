@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"go.uber.org/fx"
@@ -24,4 +25,10 @@ func New() Config {
 	}
 
 	return config
+}
+
+func (a *DatabaseConfig) DSN() string {
+	return fmt.Sprintf("postgres://%s:%s@%s:%d/%s",
+		a.Username, a.Password, a.Host, a.Port, a.Name,
+	)
 }
