@@ -11,7 +11,6 @@ import (
 	"github.com/spf13/viper"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxevent"
-	"go.uber.org/zap"
 )
 
 func init() {
@@ -35,15 +34,11 @@ var Command = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		app := fx.New(
 			Module,
-			fx.WithLogger(
-				func(logger logger.Logger) fxevent.Logger {
-					var l fxevent.ZapLogger
-
-					l.UseLogLevel(zap.DebugLevel)
-					l.Logger = logger.DesugarZap
-
-					return &l
-				},
+			fx.WithLogger(func(log logger.Logger) fxevent.Logger {
+				return &logger.FxLogger{
+					Logger: &log.Log,
+				}
+			},
 			),
 		)
 
@@ -60,12 +55,12 @@ var Module = fx.Options(
 func runApplication(lifecycle fx.Lifecycle, logger logger.Logger, db db.Database) {
 	lifecycle.Append(fx.Hook{
 		OnStart: func(context.Context) error {
-			logger.Zap.Info("Starting application")
+			logger.Log.Info().Msg("Starting application")
 
 			return nil
 		},
 		OnStop: func(context.Context) error {
-			logger.Zap.Info("Stopping application")
+			logger.Log.Info().Msg("Stopping application")
 			db.Pool.Close()
 
 			return nil

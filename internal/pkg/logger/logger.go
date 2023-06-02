@@ -2,70 +2,57 @@ package logger
 
 import (
 	"github.com/kirychukyurii/wasker/internal/config"
-	"github.com/kirychukyurii/wasker/internal/constants"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/pkgerrors"
+	"io"
 	"os"
 	"strings"
+	"time"
 )
 
 type Logger struct {
-	Zap        *zap.SugaredLogger
-	DesugarZap *zap.Logger
+	Log zerolog.Logger
 }
 
 func New(config config.Config) Logger {
-	var options []zap.Option
+	var log zerolog.Logger
+	var output io.Writer = zerolog.ConsoleWriter{
+		Out:        os.Stdout,
+		TimeFormat: time.RFC3339,
+	}
 
-	encoderConfig := zap.NewProductionEncoderConfig()
-	encoderConfig.EncodeTime = zapcore.TimeEncoderOfLayout(constants.TimeFormat)
+	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
+	zerolog.TimeFieldFormat = time.RFC3339Nano
 
-	level := zap.NewAtomicLevelAt(toLevel(config.Log.Level))
-
-	core := zapcore.NewCore(
-		zapcore.NewConsoleEncoder(encoderConfig),
-		toWriter(),
-		level,
-	)
-
-	stackLevel := zap.NewAtomicLevel()
-	stackLevel.SetLevel(zap.WarnLevel)
-	options = append(options,
-		zap.AddCaller(),
-		zap.AddStacktrace(stackLevel),
-	)
-
-	logger := zap.New(core, options...)
+	log = zerolog.New(output).
+		Level(toLevel(config.Log.Level)).
+		With().
+		Timestamp().
+		Caller().
+		Logger()
 
 	return Logger{
-		Zap:        logger.Sugar(),
-		DesugarZap: logger,
+		Log: log,
 	}
 }
 
-func toLevel(level string) zapcore.Level {
+func toLevel(level string) zerolog.Level {
 	switch strings.ToLower(level) {
+	case "trace":
+		return zerolog.TraceLevel
 	case "debug":
-		return zap.DebugLevel
+		return zerolog.DebugLevel
 	case "info":
-		return zap.InfoLevel
+		return zerolog.InfoLevel
 	case "warn":
-		return zap.WarnLevel
+		return zerolog.WarnLevel
 	case "error":
-		return zap.ErrorLevel
-	case "dpanic":
-		return zap.DPanicLevel
+		return zerolog.ErrorLevel
 	case "panic":
-		return zap.PanicLevel
+		return zerolog.PanicLevel
 	case "fatal":
-		return zap.FatalLevel
+		return zerolog.FatalLevel
 	default:
-		return zap.InfoLevel
+		return zerolog.InfoLevel
 	}
-}
-
-func toWriter() zapcore.WriteSyncer {
-	return zapcore.NewMultiWriteSyncer(
-		zapcore.AddSync(os.Stdout),
-	)
 }
