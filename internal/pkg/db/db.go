@@ -24,6 +24,10 @@ func New(config config.Config, logger logger.Logger) Database {
 	}
 
 	cfg, err := pgxpool.ParseConfig(config.Database.DSN())
+	if err != nil {
+		logger.Log.Fatal().Err(err).Msg("Failed when parsing database connection string")
+	}
+
 	cfg.ConnConfig.Tracer = tracer
 
 	// urlExample := "postgres://username:password@localhost:5432/database_name"
