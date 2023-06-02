@@ -5,6 +5,7 @@ import "go.uber.org/fx"
 // Module Middleware exported
 var Module = fx.Options(
 	fx.Provide(NewLoggerMiddleware),
+	fx.Provide(NewCorsMiddleware),
 	fx.Provide(New),
 )
 
