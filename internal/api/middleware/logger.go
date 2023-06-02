@@ -56,13 +56,12 @@ func (a LoggerMiddleware) Setup() {
 
 func (a LoggerMiddleware) core() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(ctx echo.Context) (err error) {
+		return func(ctx echo.Context) error {
 			fields := map[string]string{
 				"user_id":    logUserId,
 				"request_id": logID,
 				"remote_ip":  logRemoteIP,
 				"uri":        logURI,
-				"query":      logQueryPrefix,
 				"host":       logHost,
 				"method":     logMethod,
 				"status":     logStatus,
@@ -71,12 +70,15 @@ func (a LoggerMiddleware) core() echo.MiddlewareFunc {
 			}
 
 			logFields, err := mapFields(ctx, next, fields)
+			if err != nil {
+				a.logger.Log.Error().Err(err).Msg("Failed getting log fields")
+			}
 
 			a.logger.Log.Info().
 				Fields(logFields).
 				Msg("Handle request")
 
-			return
+			return nil
 		}
 	}
 }
