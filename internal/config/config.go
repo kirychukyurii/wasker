@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"github.com/go-playground/validator/v10"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"go.uber.org/fx"
@@ -31,4 +32,12 @@ func (a *DatabaseConfig) DSN() string {
 	return fmt.Sprintf("postgres://%s:%s@%s:%d/%s",
 		a.Username, a.Password, a.Host, a.Port, a.Name,
 	)
+}
+
+func (a *HttpConfig) ListenAddr() string {
+	if err := validator.New().Struct(a); err != nil {
+		return "0.0.0.0:5100"
+	}
+
+	return fmt.Sprintf("%s:%d", a.Host, a.Port)
 }

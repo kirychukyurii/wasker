@@ -5,12 +5,14 @@ import (
 	"github.com/kirychukyurii/wasker/internal/config"
 	"github.com/kirychukyurii/wasker/internal/pkg"
 	"github.com/kirychukyurii/wasker/internal/pkg/db"
+	"github.com/kirychukyurii/wasker/internal/pkg/handler"
 	"github.com/kirychukyurii/wasker/internal/pkg/logger"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxevent"
+	"net/http"
 )
 
 func init() {
@@ -34,11 +36,12 @@ var Command = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		app := fx.New(
 			Module,
-			fx.WithLogger(func(log logger.Logger) fxevent.Logger {
-				return &logger.FxLogger{
-					Logger: &log.Log,
-				}
-			},
+			fx.WithLogger(
+				func(log logger.Logger) fxevent.Logger {
+					return &logger.FxLogger{
+						Logger: &log.Log,
+					}
+				},
 			),
 		)
 
@@ -52,10 +55,20 @@ var Module = fx.Options(
 	fx.Invoke(runApplication),
 )
 
-func runApplication(lifecycle fx.Lifecycle, logger logger.Logger, db db.Database) {
+func runApplication(lifecycle fx.Lifecycle, cfg config.Config, logger logger.Logger, db db.Database, handler handler.HttpHandler) {
 	lifecycle.Append(fx.Hook{
 		OnStart: func(context.Context) error {
-			logger.Log.Info().Msg("Starting application")
+			logger.Log.Info().Str("http-listen", cfg.Http.ListenAddr()).Msg("Starting application")
+
+			go func() {
+				if err := handler.Engine.Start(cfg.Http.ListenAddr()); err != nil {
+					if errors.Is(err, http.ErrServerClosed) {
+						logger.Log.Debug().Err(err).Msg("Shutting down the Application")
+					} else {
+						logger.Log.Fatal().Err(err).Msg("Error to Start Application")
+					}
+				}
+			}()
 
 			return nil
 		},
