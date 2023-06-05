@@ -17,7 +17,7 @@ type Logger struct {
 func New(config config.Config) Logger {
 	var log zerolog.Logger
 	var output io.Writer = zerolog.ConsoleWriter{
-		Out:        os.Stdout,
+		Out:        os.Stderr,
 		TimeFormat: time.RFC3339,
 	}
 
