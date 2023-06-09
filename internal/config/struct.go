@@ -19,12 +19,18 @@ var DefaultConfig = Config{
 
 type Config struct {
 	Http     *HttpConfig     `mapstructure:"http"`
+	Grpc     *GrpcConfig     `mapstructure:"grpc"`
 	Log      *LogConfig      `mapstructure:"log"`
 	Auth     *Auth           `mapstructure:"auth"`
 	Database *DatabaseConfig `mapstructure:"database"`
 }
 
 type HttpConfig struct {
+	Host string `mapstructure:"host" validate:"ipv4"`
+	Port int    `mapstructure:"port" validate:"gte=1,lte=65535"`
+}
+
+type GrpcConfig struct {
 	Host string `mapstructure:"host" validate:"ipv4"`
 	Port int    `mapstructure:"port" validate:"gte=1,lte=65535"`
 }

@@ -2,17 +2,20 @@ package serve
 
 import (
 	"context"
-	"github.com/kirychukyurii/wasker/internal/api/middleware"
 	"github.com/kirychukyurii/wasker/internal/config"
+	"github.com/kirychukyurii/wasker/internal/controller"
 	"github.com/kirychukyurii/wasker/internal/pkg"
 	"github.com/kirychukyurii/wasker/internal/pkg/db"
-	"github.com/kirychukyurii/wasker/internal/pkg/handler"
-	"github.com/kirychukyurii/wasker/internal/pkg/logger"
+	"github.com/kirychukyurii/wasker/internal/pkg/log"
+	"github.com/kirychukyurii/wasker/internal/repository"
+	"github.com/kirychukyurii/wasker/internal/server"
+	"github.com/kirychukyurii/wasker/internal/service"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxevent"
+	"net"
 	"net/http"
 )
 
@@ -38,9 +41,9 @@ var Command = &cobra.Command{
 		app := fx.New(
 			Module,
 			fx.WithLogger(
-				func(log logger.Logger) fxevent.Logger {
-					return &logger.FxLogger{
-						Logger: &log.Log,
+				func(logger log.Logger) fxevent.Logger {
+					return &log.FxLogger{
+						Logger: &logger.Log,
 					}
 				},
 			),
@@ -53,23 +56,40 @@ var Command = &cobra.Command{
 var Module = fx.Options(
 	config.Module,
 	pkg.Module,
-	middleware.Module,
+	server.Module,
+	repository.Module,
+	service.Module,
+	controller.Module,
 	fx.Invoke(runApplication),
 )
 
-func runApplication(lifecycle fx.Lifecycle, cfg config.Config, logger logger.Logger, db db.Database,
-	handler handler.HttpHandler, middleware middleware.Middlewares) {
+func runApplication(lifecycle fx.Lifecycle, cfg config.Config, logger log.Logger, db db.Database,
+	httpServer server.HttpServer, grpcServer server.GrpcServer) {
 	lifecycle.Append(fx.Hook{
 		OnStart: func(context.Context) error {
-			logger.Log.Info().Str("http-listen", cfg.Http.ListenAddr()).Msg("Starting application")
+			logger.Log.Info().Str("http-listen", cfg.Http.ListenAddr()).Str("grpc-listen", cfg.Grpc.ListenAddr()).Msg("Starting application")
 
 			go func() {
-				middleware.Setup()
+				l, err := net.Listen("tcp", cfg.Grpc.ListenAddr())
+				if err != nil {
+					logger.Log.Fatal().Err(err).Msg("error in listening on port :8080")
+				}
 
-				if err := handler.Engine.Start(cfg.Http.ListenAddr()); err != nil {
-					if errors.Is(err, http.ErrServerClosed) {
-						logger.Log.Debug().Err(err).Msg("Shutting down the Application")
-					} else {
+				// the gRPC server
+				if err := grpcServer.Server.Serve(l); err != nil {
+					logger.Log.Fatal().Err(err).Msg("unable to start server")
+				}
+			}()
+
+			go func() {
+				l, err := net.Listen("tcp", ":8081")
+				if err != nil {
+					logger.Log.Fatal().Err(err).Msg("Failed listen :8081")
+				}
+
+				// the HTTP server
+				if err = httpServer.Server.Serve(l); err != nil {
+					if !errors.Is(err, http.ErrServerClosed) {
 						logger.Log.Fatal().Err(err).Msg("Error to Start Application")
 					}
 				}
@@ -80,6 +100,13 @@ func runApplication(lifecycle fx.Lifecycle, cfg config.Config, logger logger.Log
 		OnStop: func(context.Context) error {
 			logger.Log.Info().Msg("Stopping application")
 			db.Pool.Close()
+			if err := httpServer.Server.Close(); err != nil {
+				if !errors.Is(err, http.ErrServerClosed) {
+					logger.Log.Debug().Err(err).Msg("Failed to stop http server")
+				}
+			}
+
+			grpcServer.Server.GracefulStop()
 
 			return nil
 		},

@@ -29,14 +29,22 @@ func New() Config {
 }
 
 func (a *DatabaseConfig) DSN() string {
-	return fmt.Sprintf("postgres://%s:%s@%s:%d/%s",
+	return fmt.Sprintf("postgres://%s:%s@%s:%d/%s?pool_max_conns=10",
 		a.Username, a.Password, a.Host, a.Port, a.Name,
 	)
 }
 
 func (a *HttpConfig) ListenAddr() string {
 	if err := validator.New().Struct(a); err != nil {
-		return "0.0.0.0:5100"
+		return fmt.Sprintf("%s:%d", DefaultConfig.Http.Host, DefaultConfig.Http.Port)
+	}
+
+	return fmt.Sprintf("%s:%d", a.Host, a.Port)
+}
+
+func (a *GrpcConfig) ListenAddr() string {
+	if err := validator.New().Struct(a); err != nil {
+		return fmt.Sprintf("%s:%d", DefaultConfig.Grpc.Host, DefaultConfig.Grpc.Port)
 	}
 
 	return fmt.Sprintf("%s:%d", a.Host, a.Port)

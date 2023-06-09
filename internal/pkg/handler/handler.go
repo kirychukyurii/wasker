@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"github.com/go-playground/validator/v10"
 	"github.com/kirychukyurii/wasker/internal/config"
-	"github.com/kirychukyurii/wasker/internal/pkg/logger"
+	"github.com/kirychukyurii/wasker/internal/pkg/log"
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"strings"
@@ -23,7 +23,7 @@ type HttpHandler struct {
 // BinderWithValidation to verify the request's struct for parameter validation
 type BinderWithValidation struct{}
 
-func New(logger logger.Logger, config config.Config) HttpHandler {
+func New(logger log.Logger, config config.Config) HttpHandler {
 	// Error handlers
 	echo.NotFoundHandler = func(ctx echo.Context) error {
 		return Response{Code: http.StatusNotFound}.JSON(ctx)

@@ -1,0 +1,14 @@
+version: v1
+
+name: buf.build/kirychukyurii/wasker
+
+breaking:
+  use:
+    - FILE
+lint:
+  use:
+    - DEFAULT
+
+deps:
+  # adding well known types by google
+  - buf.build/googleapis/googleapis
