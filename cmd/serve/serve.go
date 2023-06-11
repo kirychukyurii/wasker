@@ -74,7 +74,7 @@ func runApplication(lifecycle fx.Lifecycle, cfg config.Config, logger log.Logger
 			go func() {
 				l, err := net.Listen("tcp", cfg.Grpc.ListenAddr())
 				if err != nil {
-					logger.Log.Fatal().Err(err).Msgf("error in listening on port :", cfg.Grpc.Port)
+					logger.Log.Fatal().Err(err).Msgf("error in listening on port :%d", cfg.Grpc.Port)
 				}
 
 				// the gRPC server
