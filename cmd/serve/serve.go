@@ -36,7 +36,7 @@ var Command = &cobra.Command{
 	PreRun: func(cmd *cobra.Command, args []string) {
 		viper.SetConfigFile(config.Path)
 		if err := viper.ReadInConfig(); err != nil {
-			panic(errors.Wrap(err, "failed to read config"))
+			panic(errors.Wrap(err, "read config"))
 		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {
@@ -74,25 +74,25 @@ func runApplication(lifecycle fx.Lifecycle, cfg config.Config, logger log.Logger
 			go func() {
 				l, err := net.Listen("tcp", cfg.Grpc.ListenAddr())
 				if err != nil {
-					logger.Log.Fatal().Err(err).Msgf("error in listening on port :%d", cfg.Grpc.Port)
+					logger.Log.Fatal().Err(err).Msgf("listening on port :%d", cfg.Grpc.Port)
 				}
 
 				// the gRPC server
 				if err := grpcServer.Server.Serve(l); err != nil {
-					logger.Log.Fatal().Err(err).Msg("unable to start server")
+					logger.Log.Fatal().Err(err).Msg("start server")
 				}
 			}()
 
 			go func() {
 				l, err := net.Listen("tcp", cfg.Http.ListenAddr())
 				if err != nil {
-					logger.Log.Fatal().Err(err).Msgf("failed listen :%d", cfg.Http.Port)
+					logger.Log.Fatal().Err(err).Msgf("listening on port :%d", cfg.Http.Port)
 				}
 
 				// the HTTP server
 				if err = httpServer.Server.Serve(l); err != nil {
 					if !errors.Is(err, http.ErrServerClosed) {
-						logger.Log.Fatal().Err(err).Msg("Error to Start Application")
+						logger.Log.Fatal().Err(err).Msg("failed to start application")
 					}
 				}
 			}()

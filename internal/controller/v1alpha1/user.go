@@ -29,7 +29,7 @@ func NewUserController(userService v1alpha1.UserService, logger log.Logger) User
 func (a UserController) ReadUser(ctx context.Context, request *pb.ReadUserRequest) (*pb.ReadUserResponse, error) {
 	u, err := a.userService.ReadUser(ctx, request.Id)
 	if err != nil {
-		a.logger.Log.Warn().Err(err).Msg("Failed UserService method ReadUser()")
+		a.logger.Log.Warn().Err(err).Msg("UserService method ReadUser()")
 		return nil, err
 	}
 

@@ -49,11 +49,11 @@ func (a UserRepository) ReadUser(ctx context.Context, userId int64) (*model.User
 
 	sql, args, err := q.ToSql()
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to build SQL statement")
+		return nil, errors.Wrap(err, "building SQL statement")
 	}
 
 	if err := pgxscan.Get(ctx, a.db.Pool, &u, sql, args...); err != nil {
-		return nil, errors.Wrap(err, "failed querying rows")
+		return nil, errors.Wrap(err, "querying rows")
 	}
 
 	/*
