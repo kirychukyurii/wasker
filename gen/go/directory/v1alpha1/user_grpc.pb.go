@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             (unknown)
-// source: user/v1alpha1/user.proto
+// source: directory/v1alpha1/user.proto
 
 package v1alpha1
 
@@ -19,12 +19,12 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	UserService_ReadUser_FullMethodName    = "/user.v1alpha1.UserService/ReadUser"
-	UserService_UpdateUser_FullMethodName  = "/user.v1alpha1.UserService/UpdateUser"
-	UserService_DeleteUsers_FullMethodName = "/user.v1alpha1.UserService/DeleteUsers"
-	UserService_CreateUser_FullMethodName  = "/user.v1alpha1.UserService/CreateUser"
-	UserService_SearchUsers_FullMethodName = "/user.v1alpha1.UserService/SearchUsers"
-	UserService_LogoutUser_FullMethodName  = "/user.v1alpha1.UserService/LogoutUser"
+	UserService_ReadUser_FullMethodName    = "/directory.v1alpha1.UserService/ReadUser"
+	UserService_UpdateUser_FullMethodName  = "/directory.v1alpha1.UserService/UpdateUser"
+	UserService_DeleteUsers_FullMethodName = "/directory.v1alpha1.UserService/DeleteUsers"
+	UserService_CreateUser_FullMethodName  = "/directory.v1alpha1.UserService/CreateUser"
+	UserService_SearchUsers_FullMethodName = "/directory.v1alpha1.UserService/SearchUsers"
+	UserService_LogoutUser_FullMethodName  = "/directory.v1alpha1.UserService/LogoutUser"
 )
 
 // UserServiceClient is the client API for UserService service.
@@ -261,7 +261,7 @@ func _UserService_LogoutUser_Handler(srv interface{}, ctx context.Context, dec f
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var UserService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "user.v1alpha1.UserService",
+	ServiceName: "directory.v1alpha1.UserService",
 	HandlerType: (*UserServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -290,5 +290,5 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "user/v1alpha1/user.proto",
+	Metadata: "directory/v1alpha1/user.proto",
 }

@@ -3,8 +3,8 @@ package server
 import (
 	"context"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	userSvc "github.com/kirychukyurii/wasker/gen/go/user/v1alpha1"
 	"github.com/kirychukyurii/wasker/internal/pkg/log"
+	"github.com/kirychukyurii/wasker/internal/server/register"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"net/http"
@@ -15,6 +15,7 @@ type HttpServer struct {
 }
 
 func NewHttpServer(logger log.Logger) HttpServer {
+	ctx := context.Background()
 	opts := []grpc.DialOption{
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
@@ -23,9 +24,8 @@ func NewHttpServer(logger log.Logger) HttpServer {
 	mux := runtime.NewServeMux()
 
 	// setting up a dail up for gRPC service by specifying endpoint/target url
-	err := userSvc.RegisterUserServiceHandlerFromEndpoint(context.Background(), mux, "localhost:8080", opts)
-	if err != nil {
-		logger.Log.Fatal().Err(err).Msg("Error registering handler from endpoint")
+	if err := register.GrpcDirectoryEndpoints(ctx, mux, "localhost:8080", opts); err != nil {
+		logger.Log.Fatal().Err(err).Msg("Error registering handlers from directory endpoint")
 	}
 
 	// Creating a normal HTTP server

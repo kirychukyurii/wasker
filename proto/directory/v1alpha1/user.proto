@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package user.v1alpha1;
+package directory.v1alpha1;
 
-option go_package = "github.com/kirychukyurii/wasker/gen/go/user/v1alpha1";
+option go_package = "github.com/kirychukyurii/wasker/gen/go/directory/v1alpha1";
 
 import "lookup/v1alpha1/lookup.proto";
 import "google/api/annotations.proto";
@@ -10,38 +10,38 @@ import "google/api/annotations.proto";
 service UserService {
   rpc ReadUser(ReadUserRequest) returns (ReadUserResponse) {
     option (google.api.http) = {
-      get: "/api/v1alpha1/users/{id}"
+      get: "/api/v1alpha1/directory/users/{id}"
       additional_bindings {
-        get: "/user"
+        get: "/api/v1alpha1/directory/user"
       }
     };
   }
 
   rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse) {
     option (google.api.http) = {
-      put: "/api/v1alpha1/users/{user.id}"
+      put: "/api/v1alpha1/directory/users/{user.id}"
       body: "*"
     };
   }
 
   rpc DeleteUsers(DeleteUsersRequest) returns (DeleteUsersResponse) {
     option (google.api.http) = {
-      delete: "/api/v1alpha1/users/{id}"
+      delete: "/api/v1alpha1/directory/users/{id}"
     };
   }
 
   rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {
     option (google.api.http) = {
-      post: "/api/v1alpha1/users"
+      post: "/api/v1alpha1/directory/users"
       body: "*"
     };
   }
 
   rpc SearchUsers(SearchUsersRequest) returns (SearchUsersResponse) {
     option (google.api.http) = {
-      get: "/users"
+      get: "/api/v1alpha1/directory/users"
       additional_bindings {
-        post: "/api/v1alpha1/users/search"
+        post: "/api/v1alpha1/directory/users/search"
         body: "*"
       }
     };
@@ -49,7 +49,7 @@ service UserService {
 
   rpc LogoutUser(LogoutUserRequest) returns (LogoutUserResponse) {
     option (google.api.http) = {
-      post: "/api/v1alpha1/users/{id}/logout"
+      post: "/api/v1alpha1/directory/users/{id}/logout"
       body: "*"
     };
   }

@@ -67,12 +67,12 @@ func runApplication(lifecycle fx.Lifecycle, cfg config.Config, logger log.Logger
 	httpServer server.HttpServer, grpcServer server.GrpcServer) {
 	lifecycle.Append(fx.Hook{
 		OnStart: func(context.Context) error {
-			logger.Log.Info().Str("http-listen", cfg.Http.ListenAddr()).Str("grpc-listen", cfg.Grpc.ListenAddr()).Msg("Starting application")
+			logger.Log.Info().Str("http-listen", cfg.Http.ListenAddr()).Str("grpc-listen", cfg.Grpc.ListenAddr()).Msg("starting application")
 
 			go func() {
 				l, err := net.Listen("tcp", cfg.Grpc.ListenAddr())
 				if err != nil {
-					logger.Log.Fatal().Err(err).Msg("error in listening on port :8080")
+					logger.Log.Fatal().Err(err).Msgf("error in listening on port :", cfg.Grpc.Port)
 				}
 
 				// the gRPC server
@@ -82,9 +82,9 @@ func runApplication(lifecycle fx.Lifecycle, cfg config.Config, logger log.Logger
 			}()
 
 			go func() {
-				l, err := net.Listen("tcp", ":8081")
+				l, err := net.Listen("tcp", cfg.Http.ListenAddr())
 				if err != nil {
-					logger.Log.Fatal().Err(err).Msg("Failed listen :8081")
+					logger.Log.Fatal().Err(err).Msgf("failed listen :%d", cfg.Http.Port)
 				}
 
 				// the HTTP server
@@ -98,11 +98,11 @@ func runApplication(lifecycle fx.Lifecycle, cfg config.Config, logger log.Logger
 			return nil
 		},
 		OnStop: func(context.Context) error {
-			logger.Log.Info().Msg("Stopping application")
+			logger.Log.Info().Msg("stopping application")
 			db.Pool.Close()
 			if err := httpServer.Server.Close(); err != nil {
 				if !errors.Is(err, http.ErrServerClosed) {
-					logger.Log.Debug().Err(err).Msg("Failed to stop http server")
+					logger.Log.Debug().Err(err).Msg("failed to stop http server")
 				}
 			}
 

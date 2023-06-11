@@ -1,15 +1,20 @@
-package log
+package interceptor
 
 import (
 	"context"
 	"fmt"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
+	"github.com/kirychukyurii/wasker/internal/pkg/log"
 	"github.com/rs/zerolog"
 )
 
-// InterceptorLogger adapts zerolog logger to interceptor logger.
+func NewGrpcLoggingHandler(logger log.Logger) (logging.Logger, []logging.Option) {
+	return grpcLoggingHandler(logger.Log), grpcLoggingOption()
+}
+
+// GrpcLoggingHandler adapts zerolog logger to interceptor logger.
 // This code is simple enough to be copied and not imported.
-func InterceptorLogger(l zerolog.Logger) logging.Logger {
+func grpcLoggingHandler(l zerolog.Logger) logging.Logger {
 	return logging.LoggerFunc(func(ctx context.Context, lvl logging.Level, msg string, fields ...any) {
 		l := l.With().Fields(fields).Logger()
 
@@ -26,4 +31,13 @@ func InterceptorLogger(l zerolog.Logger) logging.Logger {
 			panic(fmt.Sprintf("unknown level %v", lvl))
 		}
 	})
+}
+
+func grpcLoggingOption() []logging.Option {
+	opts := []logging.Option{
+		logging.WithLogOnEvents(logging.FinishCall),
+		// Add any other option (check functions starting with logging.With).
+	}
+
+	return opts
 }

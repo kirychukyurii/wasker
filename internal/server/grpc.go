@@ -3,45 +3,37 @@ package server
 import (
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/recovery"
-	pbUser "github.com/kirychukyurii/wasker/gen/go/user/v1alpha1"
-	cUser "github.com/kirychukyurii/wasker/internal/controller/user/v1alpha1"
-	"github.com/kirychukyurii/wasker/internal/pkg/log"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-	"runtime/debug"
+
+	"github.com/kirychukyurii/wasker/internal/controller"
+	"github.com/kirychukyurii/wasker/internal/pkg/log"
+	"github.com/kirychukyurii/wasker/internal/server/interceptor"
+	"github.com/kirychukyurii/wasker/internal/server/register"
 )
 
 type GrpcServer struct {
 	Server *grpc.Server
 }
 
-func NewGrpcServer(logger log.Logger, userServiceServer cUser.UserController) GrpcServer {
-	opts := []logging.Option{
-		logging.WithLogOnEvents(logging.FinishCall),
-		// Add any other option (check functions starting with logging.With).
-	}
-
-	grpcPanicRecoveryHandler := func(p any) (err error) {
-		logger.Log.Error().Err(err).Msgf("recovered from panic: %s", debug.Stack())
-		return status.Errorf(codes.Internal, "%s", p)
-	}
+func NewGrpcServer(logger log.Logger, controller controller.Controllers) GrpcServer {
+	l, opts := interceptor.NewGrpcLoggingHandler(logger)
+	r := recovery.WithRecoveryHandler(interceptor.NewGrpcPanicRecoveryHandler(logger))
 
 	// create new gRPC server
 	s := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
-			logging.UnaryServerInterceptor(log.InterceptorLogger(logger.Log), opts...),
-			recovery.UnaryServerInterceptor(recovery.WithRecoveryHandler(grpcPanicRecoveryHandler)),
+			logging.UnaryServerInterceptor(l, opts...),
+			recovery.UnaryServerInterceptor(r),
 			// Add any other interceptor you want.
 		),
 		grpc.ChainStreamInterceptor(
-			logging.StreamServerInterceptor(log.InterceptorLogger(logger.Log), opts...),
-			recovery.StreamServerInterceptor(recovery.WithRecoveryHandler(grpcPanicRecoveryHandler)),
+			logging.StreamServerInterceptor(l, opts...),
+			recovery.StreamServerInterceptor(r),
 			// Add any other interceptor you want.
 		))
 
-	// register the GreeterServerImpl on the gRPC server
-	pbUser.RegisterUserServiceServer(s, &userServiceServer)
+	// register the UserController on the gRPC server
+	register.GrpcDirectoryServiceServers(s, controller)
 
 	return GrpcServer{
 		Server: s,
