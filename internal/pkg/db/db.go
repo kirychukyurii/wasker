@@ -3,13 +3,15 @@ package db
 import (
 	"context"
 	"database/sql/driver"
+	"reflect"
+
 	sq "github.com/Masterminds/squirrel"
 	pgxzero "github.com/jackc/pgx-zerolog"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/tracelog"
+
 	"github.com/kirychukyurii/wasker/internal/config"
 	"github.com/kirychukyurii/wasker/internal/pkg/log"
-	"reflect"
 )
 
 type Database struct {

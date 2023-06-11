@@ -1,10 +1,11 @@
 package pkg
 
 import (
+	"go.uber.org/fx"
+
 	"github.com/kirychukyurii/wasker/internal/pkg/db"
 	"github.com/kirychukyurii/wasker/internal/pkg/handler"
 	"github.com/kirychukyurii/wasker/internal/pkg/log"
-	"go.uber.org/fx"
 )
 
 // Module exports dependency

@@ -1,9 +1,10 @@
 package log
 
 import (
+	"strings"
+
 	"github.com/rs/zerolog"
 	"go.uber.org/fx/fxevent"
-	"strings"
 )
 
 // FxLogger is an Fx event logger that logs events to Zero.

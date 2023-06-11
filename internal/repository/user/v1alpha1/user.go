@@ -2,12 +2,14 @@ package v1alpha1
 
 import (
 	"context"
+
 	sq "github.com/Masterminds/squirrel"
 	"github.com/georgysavva/scany/v2/pgxscan"
+	"github.com/pkg/errors"
+
 	"github.com/kirychukyurii/wasker/internal/model"
 	"github.com/kirychukyurii/wasker/internal/pkg/db"
 	"github.com/kirychukyurii/wasker/internal/pkg/log"
-	"github.com/pkg/errors"
 )
 
 type UserRepository struct {

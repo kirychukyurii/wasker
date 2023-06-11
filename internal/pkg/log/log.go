@@ -1,13 +1,15 @@
 package log
 
 import (
-	"github.com/kirychukyurii/wasker/internal/config"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/pkgerrors"
 	"io"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/pkgerrors"
+
+	"github.com/kirychukyurii/wasker/internal/config"
 )
 
 type Logger struct {

@@ -2,10 +2,11 @@ package v1alpha1
 
 import (
 	"context"
+	"time"
+
 	"github.com/kirychukyurii/wasker/internal/model"
 	"github.com/kirychukyurii/wasker/internal/pkg/log"
 	"github.com/kirychukyurii/wasker/internal/repository/user/v1alpha1"
-	"time"
 )
 
 type UserService struct {

@@ -3,9 +3,11 @@ package interceptor
 import (
 	"context"
 	"fmt"
+
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
-	"github.com/kirychukyurii/wasker/internal/pkg/log"
 	"github.com/rs/zerolog"
+
+	"github.com/kirychukyurii/wasker/internal/pkg/log"
 )
 
 func NewGrpcLoggingHandler(logger log.Logger) (logging.Logger, []logging.Option) {

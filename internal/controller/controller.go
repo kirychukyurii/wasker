@@ -1,8 +1,9 @@
 package controller
 
 import (
-	"github.com/kirychukyurii/wasker/internal/controller/v1alpha1"
 	"go.uber.org/fx"
+
+	"github.com/kirychukyurii/wasker/internal/controller/v1alpha1"
 )
 
 var Module = fx.Options(

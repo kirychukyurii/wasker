@@ -3,10 +3,12 @@ package register
 import (
 	"context"
 	"errors"
+
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"google.golang.org/grpc"
+
 	"github.com/kirychukyurii/wasker/gen/go/directory/v1alpha1"
 	"github.com/kirychukyurii/wasker/internal/controller"
-	"google.golang.org/grpc"
 )
 
 func GrpcDirectoryEndpoints(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) error {

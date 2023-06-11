@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+
 	"github.com/go-playground/validator/v10"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"

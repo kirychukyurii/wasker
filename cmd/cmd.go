@@ -3,9 +3,11 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"github.com/kirychukyurii/wasker/cmd/serve"
-	"github.com/spf13/cobra"
 	"os"
+
+	"github.com/spf13/cobra"
+
+	"github.com/kirychukyurii/wasker/cmd/serve"
 )
 
 func init() {

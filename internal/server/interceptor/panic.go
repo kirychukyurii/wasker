@@ -1,10 +1,12 @@
 package interceptor
 
 import (
-	"github.com/kirychukyurii/wasker/internal/pkg/log"
+	"runtime/debug"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"runtime/debug"
+
+	"github.com/kirychukyurii/wasker/internal/pkg/log"
 )
 
 func NewGrpcPanicRecoveryHandler(logger log.Logger) func(any) error {

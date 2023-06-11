@@ -2,12 +2,14 @@ package server
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/kirychukyurii/wasker/internal/pkg/log"
-	"github.com/kirychukyurii/wasker/internal/server/register"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"net/http"
+
+	"github.com/kirychukyurii/wasker/internal/pkg/log"
+	"github.com/kirychukyurii/wasker/internal/server/register"
 )
 
 type HttpServer struct {

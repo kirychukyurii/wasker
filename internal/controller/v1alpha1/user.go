@@ -2,9 +2,11 @@ package v1alpha1
 
 import (
 	"context"
+
+	"github.com/kirychukyurii/wasker/internal/pkg/log"
+
 	pb "github.com/kirychukyurii/wasker/gen/go/directory/v1alpha1"
 	lookup "github.com/kirychukyurii/wasker/gen/go/lookup/v1alpha1"
-	"github.com/kirychukyurii/wasker/internal/pkg/log"
 	"github.com/kirychukyurii/wasker/internal/service/user/v1alpha1"
 )
 

@@ -2,6 +2,15 @@ package serve
 
 import (
 	"context"
+	"net"
+	"net/http"
+
+	"github.com/pkg/errors"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+	"go.uber.org/fx"
+	"go.uber.org/fx/fxevent"
+
 	"github.com/kirychukyurii/wasker/internal/config"
 	"github.com/kirychukyurii/wasker/internal/controller"
 	"github.com/kirychukyurii/wasker/internal/pkg"
@@ -10,13 +19,6 @@ import (
 	"github.com/kirychukyurii/wasker/internal/repository"
 	"github.com/kirychukyurii/wasker/internal/server"
 	"github.com/kirychukyurii/wasker/internal/service"
-	"github.com/pkg/errors"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	"go.uber.org/fx"
-	"go.uber.org/fx/fxevent"
-	"net"
-	"net/http"
 )
 
 func init() {
