@@ -1,11 +1,8 @@
 package service
 
-import (
-	"go.uber.org/fx"
-
-	"github.com/kirychukyurii/wasker/internal/service/user/v1alpha1"
-)
+import "go.uber.org/fx"
 
 var Module = fx.Options(
-	fx.Provide(v1alpha1.NewUserService),
+	fx.Provide(NewUserService),
+	fx.Provide(NewAuthService),
 )

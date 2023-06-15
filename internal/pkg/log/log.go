@@ -29,7 +29,6 @@ func New(config config.Config) Logger {
 	log = zerolog.New(output).
 		Level(toLevel(config.Log.Level)).
 		With().
-		Stack().
 		Timestamp().
 		Caller().
 		Logger()

@@ -1,0 +1,144 @@
+syntax = "proto3";
+
+package directory.v1;
+
+option go_package = "github.com/kirychukyurii/wasker/gen/go/directory/v1";
+
+import "lookup/v1/lookup.proto";
+import "google/api/annotations.proto";
+
+service UserService {
+  rpc ReadUser(ReadUserRequest) returns (ReadUserResponse) {
+    option (google.api.http) = {
+      get: "/api/v1alpha1/directory/users/{id}"
+      additional_bindings {
+        get: "/api/v1alpha1/directory/user"
+      }
+    };
+  }
+
+  rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse) {
+    option (google.api.http) = {
+      put: "/api/v1alpha1/directory/users/{user.id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteUsers(DeleteUsersRequest) returns (DeleteUsersResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1alpha1/directory/users/{id}"
+    };
+  }
+
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {
+    option (google.api.http) = {
+      post: "/api/v1alpha1/directory/users"
+      body: "*"
+    };
+  }
+
+  rpc SearchUsers(SearchUsersRequest) returns (SearchUsersResponse) {
+    option (google.api.http) = {
+      get: "/api/v1alpha1/directory/users"
+      additional_bindings {
+        post: "/api/v1alpha1/directory/users/search"
+        body: "*"
+      }
+    };
+  }
+
+  rpc LogoutUser(LogoutUserRequest) returns (LogoutUserResponse) {
+    option (google.api.http) = {
+      post: "/api/v1alpha1/directory/users/{id}/logout"
+      body: "*"
+    };
+  }
+}
+
+message User {
+  int64  id = 1;
+  string name = 2;
+  string email = 3;
+  string username = 4;
+  string password = 5;
+  lookup.v1.ObjectId role = 6;
+
+  int64  created_at = 7;
+  lookup.v1.ObjectId created_by = 8;
+
+  int64  updated_at = 9;
+  lookup.v1.ObjectId updated_by = 10;
+}
+
+message CreateUserRequest {
+  User   user = 1;
+  string user_password = 2;
+  string confirm_password = 3;
+}
+
+message CreateUserResponse {
+  User user = 1;
+}
+
+message ReadUserRequest {
+  int64 id = 1;
+  repeated string fields = 2;
+}
+
+message ReadUserResponse {
+  User user = 1;
+}
+
+message UpdateUserRequest {
+  User user = 1;
+  repeated string fields = 2;
+}
+
+message UpdateUserResponse {
+  User updated = 1;
+}
+
+message DeleteUsersRequest {
+  int64 id = 1;
+  bool permanent = 2;
+}
+
+message DeleteUsersResponse {
+  repeated User deleted = 1;
+}
+
+message SearchUsersRequest {
+  repeated int64 id = 1;
+  repeated int64 not_id = 2;
+  string q = 3;
+  string name = 4;
+  string username = 5;
+
+  repeated string fields = 6;
+  repeated string sort = 7;
+  int32 page = 8;
+  int32 size = 9;
+}
+
+message SearchUsersResponse {
+  repeated User items = 1;
+
+  int32 page = 2;
+  int32 size = 3;
+  bool next = 4;
+}
+
+message UpdatePasswordRequest {
+  int64  id = 1;
+  string old_password = 2;
+  string user_password = 3;
+  string confirm_password = 4;
+}
+
+message UpdatePasswordResponse {}
+
+message LogoutUserRequest {
+  int64 id = 1;
+}
+
+message LogoutUserResponse {}

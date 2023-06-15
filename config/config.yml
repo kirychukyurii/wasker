@@ -23,6 +23,6 @@ auth:
   password: root
 
 log:
-  level: debug
+  level: info
   format: console
   directory: ./logs

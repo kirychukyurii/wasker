@@ -22,6 +22,7 @@ func NewGrpcServer(logger log.Logger, controller controller.Controllers) GrpcSer
 	// create new gRPC server
 	s := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
+			interceptor.AuthUnaryServerInterceptor(logger, controller),
 			logging.UnaryServerInterceptor(l, opts...),
 			recovery.UnaryServerInterceptor(r),
 			// Add any other interceptor you want.

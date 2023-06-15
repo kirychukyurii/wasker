@@ -1,23 +1,21 @@
 package controller
 
-import (
-	"go.uber.org/fx"
-
-	"github.com/kirychukyurii/wasker/internal/controller/v1alpha1"
-)
+import "go.uber.org/fx"
 
 var Module = fx.Options(
-	fx.Provide(v1alpha1.NewUserController),
-	fx.Provide(v1alpha1.NewV1alpha1Controllers),
+	fx.Provide(NewUserController),
+	fx.Provide(NewAuthController),
 	fx.Provide(NewGroupControllers),
 )
 
 type Controllers struct {
-	V1alpha1 v1alpha1.V1alpha1
+	User UserController
+	Auth AuthController
 }
 
-func NewGroupControllers(v1alpha1 v1alpha1.V1alpha1) Controllers {
+func NewGroupControllers(u UserController, a AuthController) Controllers {
 	return Controllers{
-		V1alpha1: v1alpha1,
+		User: u,
+		Auth: a,
 	}
 }
