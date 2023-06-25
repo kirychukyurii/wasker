@@ -2,8 +2,9 @@ package migrations
 
 import (
 	"context"
-	"github.com/kirychukyurii/wasker/internal/model"
-	"github.com/kirychukyurii/wasker/internal/model/dto"
+	"github.com/kirychukyurii/wasker/internal/directory/model"
+	"github.com/kirychukyurii/wasker/internal/directory/repository"
+	model2 "github.com/kirychukyurii/wasker/internal/model"
 	"github.com/kirychukyurii/wasker/migrations/schema"
 
 	"github.com/jackc/tern/v2/migrate"
@@ -11,7 +12,6 @@ import (
 
 	"github.com/kirychukyurii/wasker/internal/pkg/db"
 	"github.com/kirychukyurii/wasker/internal/pkg/log"
-	"github.com/kirychukyurii/wasker/internal/repository"
 )
 
 // Migrate applies all migrations to the database.
@@ -39,7 +39,7 @@ func Migrate(ctx context.Context, shutdowner fx.Shutdowner, logger log.Logger, d
 		var scopeId uint64
 		l := logger.Log.With().Str("scope", scope.Scope).Logger()
 
-		scopeResult, err := scopeRepository.Query(ctx, &model.ScopeQueryParam{Query: dto.QueryParam{Name: scope.Scope}})
+		scopeResult, err := scopeRepository.Query(ctx, &model.ScopeQueryParam{Query: model2.QueryParam{Name: scope.Scope}})
 		if err != nil {
 			l.Fatal().Err(err).Msg("query row")
 		}
@@ -61,7 +61,7 @@ func Migrate(ctx context.Context, shutdowner fx.Shutdowner, logger log.Logger, d
 		for _, endpoint := range scope.Endpoint {
 			l := logger.Log.With().Str("scope", scope.Scope).Str("scope-endpoint", endpoint.Name).Logger()
 
-			endpointResult, err := scopeRepository.QueryEndpoint(ctx, &model.ScopeEndpointQueryParam{Query: dto.QueryParam{Name: endpoint.Name}})
+			endpointResult, err := scopeRepository.QueryEndpoint(ctx, &model.ScopeEndpointQueryParam{Query: model2.QueryParam{Name: endpoint.Name}})
 			if err != nil {
 				l.Fatal().Err(err).Msg("query row")
 			}

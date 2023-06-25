@@ -2,6 +2,7 @@ package log
 
 import (
 	"context"
+	"github.com/kirychukyurii/wasker/internal/config"
 	"io"
 	"os"
 	"strings"
@@ -9,8 +10,6 @@ import (
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/pkgerrors"
-
-	"github.com/kirychukyurii/wasker/internal/config"
 )
 
 type LoggerCtxKey struct{}
