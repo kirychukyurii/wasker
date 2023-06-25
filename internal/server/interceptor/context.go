@@ -12,10 +12,16 @@ import (
 	"google.golang.org/grpc"
 )
 
+type (
+	ClientIPCtxKey struct{}
+	ServiceCtxKey  struct{}
+	MethodCtxKey   struct{}
+)
+
 var (
-	ClientIPCtxKey = "client-ip"
-	ServiceCtxKey  = "service"
-	MethodCtxKey   = "method"
+	ClientIPLogKey = "client-ip"
+	ServiceLogKey  = "service"
+	MethodLogKey   = "method"
 )
 
 func ContextUnaryServerInterceptor(cfg config.Config, logger log.Logger) grpc.UnaryServerInterceptor {
@@ -31,7 +37,7 @@ func ContextUnaryServerInterceptor(cfg config.Config, logger log.Logger) grpc.Un
 	}
 }
 
-func FromContext(ctx context.Context, key string) string {
+func FromContext(ctx context.Context, key any) string {
 	return ctx.Value(key).(string)
 }
 
@@ -48,7 +54,7 @@ func withClientIP(ctx context.Context) context.Context {
 		clientIP = clientAddr[:i]
 	}
 
-	ctx = context.WithValue(ctx, ClientIPCtxKey, clientIP)
+	ctx = context.WithValue(ctx, ClientIPCtxKey{}, clientIP)
 
 	return ctx
 }
@@ -56,8 +62,8 @@ func withClientIP(ctx context.Context) context.Context {
 func withServiceInfo(ctx context.Context, fullMethod string) context.Context {
 	service, method := splitFullMethodName(fullMethod)
 
-	ctx = context.WithValue(ctx, ServiceCtxKey, service)
-	ctx = context.WithValue(ctx, MethodCtxKey, method)
+	ctx = context.WithValue(ctx, ServiceCtxKey{}, service)
+	ctx = context.WithValue(ctx, MethodCtxKey{}, method)
 
 	return ctx
 }
@@ -72,12 +78,12 @@ func splitFullMethodName(fullMethod string) (string, string) {
 }
 
 func withLogger(ctx context.Context, logger log.Logger) context.Context {
-	service := FromContext(ctx, ServiceCtxKey)
-	method := FromContext(ctx, MethodCtxKey)
-	clientIP := FromContext(ctx, ClientIPCtxKey)
+	service := FromContext(ctx, ServiceCtxKey{})
+	method := FromContext(ctx, MethodCtxKey{})
+	clientIP := FromContext(ctx, ClientIPCtxKey{})
 
-	subLogger := logger.Log.With().Str("service", service).Str("method", method).
-		Str(requestid.DefaultXRequestIDKey, requestid.FromContext(ctx)).Str(ClientIPCtxKey, clientIP).Logger()
+	subLogger := logger.Log.With().Str(ServiceLogKey, service).Str(MethodLogKey, method).
+		Str(requestid.DefaultXRequestIDKey, requestid.FromContext(ctx)).Str(ClientIPLogKey, clientIP).Logger()
 	ctx = context.WithValue(ctx, log.LoggerCtxKey{}, subLogger)
 
 	return ctx

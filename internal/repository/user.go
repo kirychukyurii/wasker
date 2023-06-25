@@ -2,8 +2,6 @@ package repository
 
 import (
 	"context"
-	"fmt"
-
 	sq "github.com/Masterminds/squirrel"
 	scan "github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5"
@@ -85,7 +83,7 @@ func (a UserRepository) Query(ctx context.Context, param *model.UserQueryParam) 
 		q = q.Where(sq.Eq{"u.user_name": v})
 	}
 
-	q = q.OrderBy(fmt.Sprintf("%s", param.Order.Parse()))
+	q = q.OrderBy(param.Order.Parse())
 	current, pageSize := param.Pagination.GetCurrent(), param.Pagination.GetPageSize()
 	if current > 0 && pageSize > 0 {
 		offset := (current - 1) * pageSize

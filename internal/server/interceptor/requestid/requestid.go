@@ -15,9 +15,7 @@ var DefaultXRequestIDKey = "x-request-id"
 
 func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		var requestID string
-
-		requestID = HandleRequestID(ctx)
+		requestID := HandleRequestID(ctx)
 		ctx = context.WithValue(ctx, key{}, requestID)
 
 		return handler(ctx, req)

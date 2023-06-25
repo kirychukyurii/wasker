@@ -29,8 +29,8 @@ var (
 
 func UnaryServerInterceptor(logger log.Logger, controller controller.Controllers) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		service := interceptor.FromContext(ctx, interceptor.ServiceCtxKey)
-		method := interceptor.FromContext(ctx, interceptor.MethodCtxKey)
+		service := interceptor.FromContext(ctx, interceptor.ServiceCtxKey{})
+		method := interceptor.FromContext(ctx, interceptor.MethodCtxKey{})
 
 		if ok := skipAuthInterceptor(service); !ok {
 			return handler(ctx, req)

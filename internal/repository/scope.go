@@ -69,7 +69,7 @@ func (a ScopeRepository) Query(ctx context.Context, param *model.ScopeQueryParam
 		})
 	}
 
-	q = q.OrderBy(fmt.Sprintf("%s", param.Order.Parse()))
+	q = q.OrderBy(param.Order.Parse())
 	current, pageSize := param.Pagination.GetCurrent(), param.Pagination.GetPageSize()
 	if current > 0 && pageSize > 0 {
 		offset := (current - 1) * pageSize

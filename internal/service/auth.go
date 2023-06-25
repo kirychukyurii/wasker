@@ -54,7 +54,7 @@ func (a AuthService) Login(ctx context.Context, login *model.UserLogin) error {
 		User: dto.LookupEntity{
 			Id: user.Id,
 		},
-		NetworkIp:   ctx.Value(interceptor.ClientIPCtxKey).(string),
+		NetworkIp:   interceptor.FromContext(ctx, interceptor.ClientIPCtxKey{}),
 		AccessToken: model.NewID(),
 		CreatedAt:   createdAt,
 		ExpiresAt:   createdAt.Add(10 * time.Hour),
