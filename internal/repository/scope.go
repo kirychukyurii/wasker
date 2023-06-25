@@ -3,6 +3,8 @@ package repository
 import (
 	"context"
 	"fmt"
+	scan "github.com/georgysavva/scany/v2/pgxscan"
+	"github.com/jackc/pgx/v5"
 
 	sq "github.com/Masterminds/squirrel"
 
@@ -33,7 +35,9 @@ func (a ScopeRepository) Create(ctx context.Context, scope *model.Scope) (uint64
 
 	sql, args, err := q.ToSql()
 	if err != nil {
-		return 0, errors.Wrap(err, "build SQL statement")
+		a.logger.FromContext(ctx).Log.Error().Err(err).Msg(errors.ErrDatabaseBuildSql.Error())
+
+		return 0, errors.ErrDatabaseInternalError
 	}
 
 	err = a.db.Pool.QueryRow(ctx, sql, args...).Scan(&rowId)
@@ -46,7 +50,6 @@ func (a ScopeRepository) Create(ctx context.Context, scope *model.Scope) (uint64
 
 func (a ScopeRepository) Query(ctx context.Context, param *model.ScopeQueryParam) (*model.ScopeQueryResult, error) {
 	var list model.Scopes
-	var scope model.Scope
 	var pagination dto.Pagination
 
 	q := a.db.Dialect().Select("id", "name").
@@ -66,7 +69,7 @@ func (a ScopeRepository) Query(ctx context.Context, param *model.ScopeQueryParam
 		})
 	}
 
-	q = q.OrderBy(fmt.Sprintf("%s", param.Order.ParseOrder()))
+	q = q.OrderBy(fmt.Sprintf("%s", param.Order.Parse()))
 	current, pageSize := param.Pagination.GetCurrent(), param.Pagination.GetPageSize()
 	if current > 0 && pageSize > 0 {
 		offset := (current - 1) * pageSize
@@ -77,25 +80,20 @@ func (a ScopeRepository) Query(ctx context.Context, param *model.ScopeQueryParam
 
 	sql, args, err := q.ToSql()
 	if err != nil {
-		return nil, errors.Wrap(err, "build SQL statement")
+		a.logger.FromContext(ctx).Log.Error().Err(err).Msg(errors.ErrDatabaseBuildSql.Error())
+
+		return nil, errors.ErrDatabaseInternalError
 	}
 
-	rows, err := a.db.Pool.Query(ctx, sql, args...)
-	if err != nil {
-		return nil, errors.Wrap(err, "query rows")
-	}
+	if err = scan.Select(ctx, a.db.Pool, &list, sql, args...); err != nil {
+		a.logger.FromContext(ctx).Log.Error().Err(err).Msg(errors.ErrDatabaseQueryRow.Error())
 
-	defer rows.Close()
-	for rows.Next() {
-		err = rows.Scan(&scope.Id, &scope.Name)
-		if err != nil {
-			return nil, errors.Wrap(err, "scan rows")
+		switch {
+		case errors.Is(err, pgx.ErrNoRows):
+			return nil, errors.ErrDatabaseRecordNotFound
+		default:
+			return nil, errors.ErrDatabaseInternalError
 		}
-
-		list = append(list, &scope)
-	}
-	if rows.Err() != nil {
-		return nil, errors.Wrap(rows.Err(), "read rows")
 	}
 
 	pagination.Current = current
@@ -118,7 +116,9 @@ func (a ScopeRepository) CreateEndpoint(ctx context.Context, endpoint *model.Sco
 
 	sql, args, err := q.ToSql()
 	if err != nil {
-		return 0, errors.Wrap(err, "build SQL statement")
+		a.logger.FromContext(ctx).Log.Error().Err(err).Msg(errors.ErrDatabaseBuildSql.Error())
+
+		return 0, errors.ErrDatabaseInternalError
 	}
 
 	err = a.db.Pool.QueryRow(ctx, sql, args...).Scan(&rowId)
@@ -131,7 +131,6 @@ func (a ScopeRepository) CreateEndpoint(ctx context.Context, endpoint *model.Sco
 
 func (a ScopeRepository) QueryEndpoint(ctx context.Context, param *model.ScopeEndpointQueryParam) (*model.ScopeEndpointQueryResult, error) {
 	var list model.ScopeEndpoints
-	var endpoint model.ScopeEndpoint
 	var pagination dto.Pagination
 
 	q := a.db.Dialect().Select("se.id", "se.name", "se.bit", `s.id as "scope.id"`, `s.name as "scope.name"`).
@@ -152,7 +151,7 @@ func (a ScopeRepository) QueryEndpoint(ctx context.Context, param *model.ScopeEn
 		})
 	}
 
-	q = q.OrderBy(fmt.Sprintf("se.%s", param.Order.ParseOrder()))
+	q = q.OrderBy(fmt.Sprintf("se.%s", param.Order.Parse()))
 	current, pageSize := param.Pagination.GetCurrent(), param.Pagination.GetPageSize()
 	if current > 0 && pageSize > 0 {
 		offset := (current - 1) * pageSize
@@ -163,25 +162,20 @@ func (a ScopeRepository) QueryEndpoint(ctx context.Context, param *model.ScopeEn
 
 	sql, args, err := q.ToSql()
 	if err != nil {
-		return nil, errors.Wrap(err, "build SQL statement")
+		a.logger.FromContext(ctx).Log.Error().Err(err).Msg(errors.ErrDatabaseBuildSql.Error())
+
+		return nil, errors.ErrDatabaseInternalError
 	}
 
-	rows, err := a.db.Pool.Query(ctx, sql, args...)
-	if err != nil {
-		return nil, errors.Wrap(err, "query rows")
-	}
+	if err = scan.Select(ctx, a.db.Pool, &list, sql, args...); err != nil {
+		a.logger.FromContext(ctx).Log.Error().Err(err).Msg(errors.ErrDatabaseQueryRow.Error())
 
-	defer rows.Close()
-	for rows.Next() {
-		err = rows.Scan(&endpoint.Id, &endpoint.Name, &endpoint.Bit, &endpoint.Scope.Id, &endpoint.Scope.Name)
-		if err != nil {
-			return nil, errors.Wrap(err, "scan rows")
+		switch {
+		case errors.Is(err, pgx.ErrNoRows):
+			return nil, errors.ErrDatabaseRecordNotFound
+		default:
+			return nil, errors.ErrDatabaseInternalError
 		}
-
-		list = append(list, &endpoint)
-	}
-	if rows.Err() != nil {
-		return nil, errors.Wrap(rows.Err(), "read rows")
 	}
 
 	pagination.Current = current

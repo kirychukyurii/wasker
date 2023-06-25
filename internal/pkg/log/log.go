@@ -1,6 +1,7 @@
 package log
 
 import (
+	"context"
 	"io"
 	"os"
 	"strings"
@@ -11,6 +12,8 @@ import (
 
 	"github.com/kirychukyurii/wasker/internal/config"
 )
+
+type LoggerCtxKey struct{}
 
 type Logger struct {
 	Log zerolog.Logger
@@ -56,5 +59,13 @@ func toLevel(level string) zerolog.Level {
 		return zerolog.FatalLevel
 	default:
 		return zerolog.InfoLevel
+	}
+}
+
+func (l *Logger) FromContext(ctx context.Context) *Logger {
+	logger := ctx.Value(LoggerCtxKey{}).(zerolog.Logger)
+
+	return &Logger{
+		Log: logger,
 	}
 }

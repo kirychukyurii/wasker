@@ -23,7 +23,9 @@ func NewHttpServer(logger log.Logger) HttpServer {
 	}
 
 	// creating mux for gRPC gateway. This will multiplex or route request different gRPC service
-	mux := runtime.NewServeMux()
+	mux := runtime.NewServeMux(
+		runtime.WithErrorHandler(runtime.DefaultHTTPErrorHandler),
+	)
 
 	// setting up a dail up for gRPC service by specifying endpoint/target url
 	if err := register.GrpcDirectoryEndpoints(ctx, mux, "localhost:8080", opts); err != nil {

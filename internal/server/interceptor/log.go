@@ -3,8 +3,8 @@ package interceptor
 import (
 	"context"
 	"fmt"
-
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
+	"github.com/kirychukyurii/wasker/internal/server/interceptor/requestid"
 	"github.com/rs/zerolog"
 
 	"github.com/kirychukyurii/wasker/internal/pkg/log"
@@ -38,6 +38,11 @@ func grpcLoggingHandler(l zerolog.Logger) logging.Logger {
 func grpcLoggingOption() []logging.Option {
 	opts := []logging.Option{
 		logging.WithLogOnEvents(logging.FinishCall),
+		logging.WithFieldsFromContext(func(ctx context.Context) logging.Fields {
+			id := requestid.FromContext(ctx)
+
+			return logging.Fields{requestid.DefaultXRequestIDKey, id}
+		}),
 		// Add any other option (check functions starting with logging.With).
 	}
 

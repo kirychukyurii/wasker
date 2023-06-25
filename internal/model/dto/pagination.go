@@ -1,21 +1,21 @@
 package dto
 
 type Pagination struct {
-	Total    int64 `json:"total"`
-	Current  int   `json:"current"`
-	PageSize int   `json:"page_size"`
+	Total    uint64 `json:"total"`
+	Current  uint64 `json:"current"`
+	PageSize uint64 `json:"page_size"`
 }
 
 type PaginationParam struct {
-	Current  int `json:"current" query:"current"`
-	PageSize int `json:"page_size" query:"page_size" validate:"max=128"`
+	Current  uint64 `json:"current" query:"current"`
+	PageSize uint64 `json:"page_size" query:"page_size" validate:"max=128"`
 }
 
-func (a *PaginationParam) GetCurrent() int {
+func (a *PaginationParam) GetCurrent() uint64 {
 	return a.Current
 }
 
-func (a *PaginationParam) GetPageSize() int {
+func (a *PaginationParam) GetPageSize() uint64 {
 	pageSize := a.PageSize
 	if a.PageSize == 0 {
 		pageSize = 15

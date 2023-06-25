@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+
 	sq "github.com/Masterminds/squirrel"
 	pgxzero "github.com/jackc/pgx-zerolog"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -19,10 +20,11 @@ func New(config config.Config, logger log.Logger) Database {
 	ctx := context.Background()
 
 	// TODO: log messages with level trace (now it info)
-	tlogger := pgxzero.NewLogger(logger.Log)
-	tracer := &tracelog.TraceLog{
-		Logger:   tlogger,
-		LogLevel: tracelog.LogLevelTrace,
+	dblogger := pgxzero.NewLogger(logger.Log)
+	dblevel, err := tracelog.LogLevelFromString(logger.Log.GetLevel().String())
+	if err != nil {
+		logger.Log.Err(err).Msg("setup a pgx tracing level to default: info")
+		dblevel = tracelog.LogLevelInfo
 	}
 
 	cfg, err := pgxpool.ParseConfig(config.Database.DSN())
@@ -30,7 +32,10 @@ func New(config config.Config, logger log.Logger) Database {
 		logger.Log.Fatal().Err(err).Msg("parsing database connection string")
 	}
 
-	cfg.ConnConfig.Tracer = tracer
+	cfg.ConnConfig.Tracer = &tracelog.TraceLog{
+		Logger:   dblogger,
+		LogLevel: dblevel,
+	}
 
 	// urlExample := "postgres://username:password@localhost:5432/database_name"
 	dbpool, err := pgxpool.NewWithConfig(ctx, cfg)
@@ -55,10 +60,4 @@ func New(config config.Config, logger log.Logger) Database {
 
 func (a *Database) Dialect() sq.StatementBuilderType {
 	return sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-}
-
-// ColumnDataPair describes a piece of data that is stored in a database table column
-type ColumnDataPair struct {
-	Column string
-	Data   interface{}
 }

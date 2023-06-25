@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"github.com/kirychukyurii/wasker/cmd/migrate"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -12,6 +13,7 @@ import (
 
 func init() {
 	Command.AddCommand(serve.Command)
+	Command.AddCommand(migrate.Command)
 }
 
 var (

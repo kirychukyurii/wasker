@@ -24,9 +24,14 @@ func GrpcDirectoryEndpoints(ctx context.Context, mux *runtime.ServeMux, endpoint
 		return errors.Join(err)
 	}
 
+	if err := v1.RegisterAuthServiceHandlerFromEndpoint(ctx, mux, endpoint, opts); err != nil {
+		return errors.Join(err)
+	}
+
 	return nil
 }
 
 func GrpcDirectoryServiceServers(s grpc.ServiceRegistrar, controller controller.Controllers) {
 	v1.RegisterUserServiceServer(s, &controller.User)
+	v1.RegisterAuthServiceServer(s, &controller.Auth)
 }

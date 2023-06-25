@@ -1,9 +1,11 @@
 package dto
 
-import "time"
+import (
+	"time"
+)
 
 type Model struct {
-	Id int64 `json:"id" db:"id"`
+	Id uint64 `json:"id" db:"id"`
 
 	CreatedAt time.Time    `json:"created_at" db:"created_at"`
 	CreatedBy LookupEntity `json:"created_by" db:"created_by"`
@@ -16,6 +18,11 @@ type Model struct {
 }
 
 type LookupEntity struct {
-	Id   int64  `json:"id,omitempty" db:"id"`
+	Id   uint64 `json:"id,omitempty" db:"id"`
 	Name string `json:"name,omitempty" db:"name"`
+}
+
+type NullableLookupEntity struct {
+	Id   *uint64 `json:"id,omitempty" db:"id"`
+	Name *string `json:"name,omitempty" db:"name"`
 }

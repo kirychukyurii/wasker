@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"fmt"
+	"github.com/kirychukyurii/wasker/internal/server/interceptor"
 	"strconv"
 	"strings"
 
@@ -26,9 +27,11 @@ var (
 	typeAuthorize   = "bearer"
 )
 
-func AuthUnaryServerInterceptor(logger log.Logger, controller controller.Controllers) grpc.UnaryServerInterceptor {
+func UnaryServerInterceptor(logger log.Logger, controller controller.Controllers) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		service, method := splitFullMethodName(info.FullMethod)
+		service := interceptor.FromContext(ctx, interceptor.ServiceCtxKey)
+		method := interceptor.FromContext(ctx, interceptor.MethodCtxKey)
+
 		if ok := skipAuthInterceptor(service); !ok {
 			return handler(ctx, req)
 		}
@@ -45,17 +48,18 @@ func AuthUnaryServerInterceptor(logger log.Logger, controller controller.Control
 
 		userId, err := controller.Auth.VerifyToken(ctx, token)
 		if err != nil {
-			logger.Log.Error().Err(err).Msg("verify token")
+			logger.FromContext(ctx).Log.Error().Err(err).Msg("verify token")
 			return nil, status.Error(codes.Unauthenticated, "unauthenticated")
 		}
 
+		subLogger := logger.FromContext(ctx).Log.With().Str("user", strconv.FormatUint(userId, 10)).Logger()
+		ctx = context.WithValue(ctx, log.LoggerCtxKey{}, subLogger)
+
 		ok, err = controller.Auth.VerifyPermission(ctx, userId, service, method)
 		if err != nil || !ok {
-			msg := fmt.Sprintf("denied: user_id=%d, service=%s, method=%s", userId, service, method)
-			logger.Log.Error().Err(err).Str("user_id", strconv.FormatUint(userId, 10)).Str("service", service).
-				Str("method", method).Msg("permission denied")
+			logger.FromContext(ctx).Log.Error().Err(err).Msg("permission denied")
 
-			return nil, status.Error(codes.PermissionDenied, msg)
+			return nil, status.Error(codes.PermissionDenied, fmt.Sprintf("denied: user_id=%d, service=%s, method=%s", userId, service, method))
 		}
 
 		return handler(ctx, req)
@@ -86,15 +90,6 @@ func authFromMD(md []string, expectedScheme string) (string, error) {
 	}
 
 	return token, nil
-}
-
-func splitFullMethodName(fullMethod string) (string, string) {
-	fullMethod = strings.TrimPrefix(fullMethod, "/") // remove leading slash
-	if i := strings.Index(fullMethod, "/"); i >= 0 {
-		return fullMethod[:i], fullMethod[i+1:]
-	}
-
-	return "unknown", "unknown"
 }
 
 // skipAuthInterceptor setup auth matcher.

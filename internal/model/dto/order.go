@@ -16,7 +16,7 @@ type OrderParam struct {
 	Direction OrderDirection `json:"order_direction" query:"order_direction"`
 }
 
-func (a OrderParam) ParseOrder() string {
+func (a OrderParam) Parse() string {
 	if a.Key == "" {
 		a.Key = OrderDefaultKey
 	}

@@ -37,7 +37,7 @@ service UserService {
     };
   }
 
-  rpc SearchUsers(SearchUsersRequest) returns (SearchUsersResponse) {
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse) {
     option (google.api.http) = {
       get: "/api/v1alpha1/directory/users"
       additional_bindings {
@@ -56,7 +56,7 @@ service UserService {
 }
 
 message User {
-  int64  id = 1;
+  uint64  id = 1;
   string name = 2;
   string email = 3;
   string username = 4;
@@ -81,7 +81,7 @@ message CreateUserResponse {
 }
 
 message ReadUserRequest {
-  int64 id = 1;
+  uint64 id = 1;
   repeated string fields = 2;
 }
 
@@ -99,7 +99,7 @@ message UpdateUserResponse {
 }
 
 message DeleteUsersRequest {
-  int64 id = 1;
+  uint64 id = 1;
   bool permanent = 2;
 }
 
@@ -107,29 +107,29 @@ message DeleteUsersResponse {
   repeated User deleted = 1;
 }
 
-message SearchUsersRequest {
-  repeated int64 id = 1;
-  repeated int64 not_id = 2;
+message ListUsersRequest {
+  repeated uint64 id = 1;
+  repeated uint64 not_id = 2;
   string q = 3;
   string name = 4;
   string username = 5;
 
   repeated string fields = 6;
   repeated string sort = 7;
-  int32 page = 8;
-  int32 size = 9;
+  uint32 page = 8;
+  uint32 size = 9;
 }
 
-message SearchUsersResponse {
+message ListUsersResponse {
   repeated User items = 1;
 
-  int32 page = 2;
-  int32 size = 3;
+  uint32 page = 2;
+  uint32 size = 3;
   bool next = 4;
 }
 
 message UpdatePasswordRequest {
-  int64  id = 1;
+  uint64  id = 1;
   string old_password = 2;
   string user_password = 3;
   string confirm_password = 4;
@@ -138,7 +138,7 @@ message UpdatePasswordRequest {
 message UpdatePasswordResponse {}
 
 message LogoutUserRequest {
-  int64 id = 1;
+  uint64 id = 1;
 }
 
 message LogoutUserResponse {}

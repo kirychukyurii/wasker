@@ -41,15 +41,15 @@ func (a UserController) ReadUser(ctx context.Context, request *pb.ReadUserReques
 			Username: u.UserName,
 			Password: "",
 			Role: &lookup.ObjectId{
-				Id:   u.Role.Id,
-				Name: u.Role.Name,
+				Id:   *u.Role.Id,
+				Name: *u.Role.Name,
 			},
-			CreatedAt: 0,
+			CreatedAt: u.CreatedAt.Unix(),
 			CreatedBy: &lookup.ObjectId{
 				Id:   u.CreatedBy.Id,
 				Name: u.CreatedBy.Name,
 			},
-			UpdatedAt: 0,
+			UpdatedAt: u.UpdatedAt.Unix(),
 			UpdatedBy: &lookup.ObjectId{
 				Id:   u.UpdatedBy.Id,
 				Name: u.UpdatedBy.Name,

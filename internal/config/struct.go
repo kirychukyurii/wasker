@@ -31,8 +31,9 @@ type HttpConfig struct {
 }
 
 type GrpcConfig struct {
-	Host string `mapstructure:"host" validate:"ipv4"`
-	Port int    `mapstructure:"port" validate:"gte=1,lte=65535"`
+	Timeout int    `mapstructure:"timeout" validate:"gte=1,lte=65535"`
+	Host    string `mapstructure:"host" validate:"ipv4"`
+	Port    int    `mapstructure:"port" validate:"gte=1,lte=65535"`
 }
 
 type LogConfig struct {
