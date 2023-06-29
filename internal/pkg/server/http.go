@@ -15,6 +15,8 @@ import (
 	"github.com/kirychukyurii/wasker/internal/pkg/log"
 )
 
+var maxMsgSize = 1024 * 1024 * 20
+
 type HttpServer struct {
 	Server *http.Server
 }
@@ -23,6 +25,7 @@ func NewHttpServer(logger log.Logger, discovery consul.ServiceDiscovery) HttpSer
 	ctx := context.Background()
 	opts := []grpc.DialOption{
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxMsgSize)),
 	}
 
 	// creating mux for gRPC gateway. This will multiplex or route request different gRPC service
