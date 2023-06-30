@@ -9,6 +9,7 @@ import (
 	"github.com/kirychukyurii/wasker/internal/pkg/server/interceptor/auth"
 	"github.com/kirychukyurii/wasker/internal/pkg/server/interceptor/requestid"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 
 	"github.com/kirychukyurii/wasker/internal/pkg/log"
 )
@@ -36,6 +37,9 @@ func NewGrpcServer(cfg config.Config, logger log.Logger, controller controller.C
 			recovery.StreamServerInterceptor(r),
 			// Add any other interceptor you want.
 		))
+
+	// Register reflection service on gRPC server.
+	reflection.Register(s)
 
 	return GrpcServer{
 		Server: s,
