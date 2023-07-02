@@ -1,0 +1,114 @@
+syntax = "proto3";
+
+package task.v1;
+
+option go_package = "github.com/kirychukyurii/wasker/gen/go/task/v1";
+
+import "lookup/v1/lookup.proto";
+import "google/api/annotations.proto";
+
+service SourceService {
+  rpc ReadSource(ReadSourceRequest) returns (ReadSourceResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/task/sources/{id}"
+      additional_bindings {
+        get: "/api/v1/task/source"
+      }
+    };
+  }
+
+  rpc UpdateSource(UpdateSourceRequest) returns (UpdateSourceResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/task/sources/{source.id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteSource(DeleteSourceRequest) returns (DeleteSourceResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/task/sources/{id}"
+    };
+  }
+
+  rpc CreateSource(CreateSourceRequest) returns (CreateSourceResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/task/sources"
+      body: "*"
+    };
+  }
+
+  rpc ListSources(ListSourcesRequest) returns (ListSourcesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/task/sources"
+      additional_bindings {
+        post: "/api/v1/task/sources/search"
+        body: "*"
+      }
+    };
+  }
+}
+
+message Source {
+  int64  id = 1;
+  string name = 2;
+
+  int64 created_at = 7;
+  lookup.v1.ObjectId created_by = 8;
+
+  int64 updated_at = 9;
+  lookup.v1.ObjectId updated_by = 10;
+}
+
+message CreateSourceRequest {
+  Source source = 1;
+}
+
+message CreateSourceResponse {
+  Source source = 1;
+}
+
+message ReadSourceRequest {
+  int64 id = 1;
+  repeated string fields = 2;
+}
+
+message ReadSourceResponse {
+  Source source = 1;
+}
+
+message UpdateSourceRequest {
+  Source source = 1;
+  repeated string fields = 2;
+}
+
+message UpdateSourceResponse {
+  Source updated = 1;
+}
+
+message DeleteSourceRequest {
+  int64 id = 1;
+  bool permanent = 2;
+}
+
+message DeleteSourceResponse {
+  repeated Source deleted = 1;
+}
+
+message ListSourcesRequest {
+  repeated int64 id = 1;
+  string q = 3;
+  string name = 4;
+
+  repeated string fields = 6;
+  repeated string sort = 7;
+  uint32 page = 8;
+  uint32 size = 9;
+}
+
+message ListSourcesResponse {
+  repeated Source items = 1;
+
+  uint32 page = 2;
+  uint32 size = 3;
+  bool next = 4;
+}

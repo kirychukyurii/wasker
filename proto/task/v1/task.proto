@@ -1,0 +1,120 @@
+syntax = "proto3";
+
+package task.v1;
+
+option go_package = "github.com/kirychukyurii/wasker/gen/go/task/v1";
+
+import "lookup/v1/lookup.proto";
+import "google/api/annotations.proto";
+
+service TaskService {
+  rpc ReadTask(ReadTaskRequest) returns (ReadTaskResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/task/tasks/{id}"
+      additional_bindings {
+        get: "/api/v1/task/task"
+      }
+    };
+  }
+
+  rpc UpdateTask(UpdateTaskRequest) returns (UpdateTaskResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/task/tasks/{task.id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteTask(DeleteTaskRequest) returns (DeleteTaskResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/task/tasks/{id}"
+    };
+  }
+
+  rpc CreateTask(CreateTaskRequest) returns (CreateTaskResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/task/tasks"
+      body: "*"
+    };
+  }
+
+  rpc ListTasks(ListTasksRequest) returns (ListTasksResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/task/tasks"
+      additional_bindings {
+        post: "/api/v1/task/tasks/search"
+        body: "*"
+      }
+    };
+  }
+}
+
+message Task {
+  int64  id = 1;
+  string name = 2;
+  string description = 3;
+  string link = 4;
+
+  lookup.v1.ObjectId type = 5;
+  lookup.v1.ObjectId source = 6;
+  lookup.v1.ObjectId customer = 7;
+
+  int64 created_at = 8;
+  lookup.v1.ObjectId created_by = 9;
+
+  int64 updated_at = 10;
+  lookup.v1.ObjectId updated_by = 11;
+}
+
+message CreateTaskRequest {
+  Task task = 1;
+}
+
+message CreateTaskResponse {
+  Task task = 1;
+}
+
+message ReadTaskRequest {
+  int64 id = 1;
+  repeated string fields = 2;
+}
+
+message ReadTaskResponse {
+  Task task = 1;
+}
+
+message UpdateTaskRequest {
+  Task task = 1;
+  repeated string fields = 2;
+}
+
+message UpdateTaskResponse {
+  Task updated = 1;
+}
+
+message DeleteTaskRequest {
+  int64 id = 1;
+  bool permanent = 2;
+}
+
+message DeleteTaskResponse {
+  repeated Task deleted = 1;
+}
+
+message ListTasksRequest {
+  repeated int64 id = 1;
+  string q = 3;
+  string name = 4;
+
+  repeated string fields = 6;
+  repeated string sort = 7;
+  uint32 page = 8;
+  uint32 size = 9;
+}
+
+message ListTasksResponse {
+  repeated Task items = 1;
+
+  uint32 page = 2;
+  uint32 size = 3;
+  bool next = 4;
+}

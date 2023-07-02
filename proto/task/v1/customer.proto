@@ -1,0 +1,114 @@
+syntax = "proto3";
+
+package task.v1;
+
+option go_package = "github.com/kirychukyurii/wasker/gen/go/task/v1";
+
+import "lookup/v1/lookup.proto";
+import "google/api/annotations.proto";
+
+service CustomerService {
+  rpc ReadCustomer(ReadCustomerRequest) returns (ReadCustomerResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/task/customers/{id}"
+      additional_bindings {
+        get: "/api/v1/task/customer"
+      }
+    };
+  }
+
+  rpc UpdateCustomer(UpdateCustomerRequest) returns (UpdateCustomerResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/task/customers/{customer.id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteCustomer(DeleteCustomerRequest) returns (DeleteCustomerResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/task/customers/{id}"
+    };
+  }
+
+  rpc CreateCustomer(CreateCustomerRequest) returns (CreateCustomerResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/task/customers"
+      body: "*"
+    };
+  }
+
+  rpc ListCustomers(ListCustomersRequest) returns (ListCustomersResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/task/customers"
+      additional_bindings {
+        post: "/api/v1/task/customers/search"
+        body: "*"
+      }
+    };
+  }
+}
+
+message Customer {
+  int64  id = 1;
+  string name = 2;
+
+  int64 created_at = 7;
+  lookup.v1.ObjectId created_by = 8;
+
+  int64 updated_at = 9;
+  lookup.v1.ObjectId updated_by = 10;
+}
+
+message CreateCustomerRequest {
+  Customer customer = 1;
+}
+
+message CreateCustomerResponse {
+  Customer customer = 1;
+}
+
+message ReadCustomerRequest {
+  int64 id = 1;
+  repeated string fields = 2;
+}
+
+message ReadCustomerResponse {
+  Customer customer = 1;
+}
+
+message UpdateCustomerRequest {
+  Customer customer = 1;
+  repeated string fields = 2;
+}
+
+message UpdateCustomerResponse {
+  Customer updated = 1;
+}
+
+message DeleteCustomerRequest {
+  int64 id = 1;
+  bool permanent = 2;
+}
+
+message DeleteCustomerResponse {
+  repeated Customer deleted = 1;
+}
+
+message ListCustomersRequest {
+  repeated int64 id = 1;
+  string q = 3;
+  string name = 4;
+
+  repeated string fields = 6;
+  repeated string sort = 7;
+  uint32 page = 8;
+  uint32 size = 9;
+}
+
+message ListCustomersResponse {
+  repeated Customer items = 1;
+
+  uint32 page = 2;
+  uint32 size = 3;
+  bool next = 4;
+}

@@ -1,0 +1,114 @@
+syntax = "proto3";
+
+package task.v1;
+
+option go_package = "github.com/kirychukyurii/wasker/gen/go/task/v1";
+
+import "lookup/v1/lookup.proto";
+import "google/api/annotations.proto";
+
+service TypeService {
+  rpc ReadType(ReadTypeRequest) returns (ReadTypeResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/task/types/{id}"
+      additional_bindings {
+        get: "/api/v1/task/type"
+      }
+    };
+  }
+
+  rpc UpdateType(UpdateTypeRequest) returns (UpdateTypeResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/task/types/{type.id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteType(DeleteTypeRequest) returns (DeleteTypeResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/task/types/{id}"
+    };
+  }
+
+  rpc CreateType(CreateTypeRequest) returns (CreateTypeResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/task/types"
+      body: "*"
+    };
+  }
+
+  rpc ListTypes(ListTypesRequest) returns (ListTypesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/task/types"
+      additional_bindings {
+        post: "/api/v1/task/types/search"
+        body: "*"
+      }
+    };
+  }
+}
+
+message Type {
+  int64  id = 1;
+  string name = 2;
+
+  int64 created_at = 7;
+  lookup.v1.ObjectId created_by = 8;
+
+  int64 updated_at = 9;
+  lookup.v1.ObjectId updated_by = 10;
+}
+
+message CreateTypeRequest {
+  Type type = 1;
+}
+
+message CreateTypeResponse {
+  Type type = 1;
+}
+
+message ReadTypeRequest {
+  int64 id = 1;
+  repeated string fields = 2;
+}
+
+message ReadTypeResponse {
+  Type type = 1;
+}
+
+message UpdateTypeRequest {
+  Type type = 1;
+  repeated string fields = 2;
+}
+
+message UpdateTypeResponse {
+  Type updated = 1;
+}
+
+message DeleteTypeRequest {
+  int64 id = 1;
+  bool permanent = 2;
+}
+
+message DeleteTypeResponse {
+  repeated Type deleted = 1;
+}
+
+message ListTypesRequest {
+  repeated int64 id = 1;
+  string q = 3;
+  string name = 4;
+
+  repeated string fields = 6;
+  repeated string sort = 7;
+  uint32 page = 8;
+  uint32 size = 9;
+}
+
+message ListTypesResponse {
+  repeated Type items = 1;
+
+  uint32 page = 2;
+  uint32 size = 3;
+  bool next = 4;
+}
