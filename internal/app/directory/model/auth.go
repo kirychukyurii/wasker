@@ -61,7 +61,7 @@ type (
 
 type (
 	Scope struct {
-		Id   uint64 `db:"id"`
+		Id   int64  `db:"id"`
 		Name string `db:"name"`
 	}
 
@@ -79,7 +79,7 @@ type (
 	}
 
 	ScopeEndpoint struct {
-		Id   uint64 `db:"id"`
+		Id   int64  `db:"id"`
 		Name string `db:"name"`
 		Bit  uint8  `db:"bit"`
 
@@ -107,7 +107,7 @@ type (
 	}
 
 	UserSession struct {
-		Id          uint64             `json:"id" db:"id"`
+		Id          int64              `json:"id" db:"id"`
 		User        model.LookupEntity `json:"user" db:"user"`
 		NetworkIp   string             `json:"network_ip" db:"network_ip"`
 		AccessToken string             `json:"access_token" db:"access_token"`

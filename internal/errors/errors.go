@@ -1,17 +1,109 @@
 package errors
 
 import (
+	"encoding/json"
+
 	"github.com/pkg/errors"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
+
+type AppError struct {
+	Code    codes.Code     `json:"code"`
+	Message string         `json:"message"`
+	Details AppErrorDetail `json:"details"`
+}
+
+type AppErrorDetail struct {
+	ErrId     string `json:"id"`
+	Err       error  `json:"error"`
+	RequestId string `json:"request_id"`
+}
+
+// Error Returns Message if Details.Err is nil.
+func (e AppError) Error() string {
+	if err := e.Details.Err; err != nil {
+		return err.Error()
+	}
+
+	return e.Message
+}
+
+func (e AppError) Msg() string {
+	return e.Message
+}
+
+func (e AppError) ToJson() string {
+	b, _ := json.Marshal(e)
+
+	return string(b)
+}
+
+func NewInternalError(appError AppError) *AppError {
+	return &AppError{
+		Code:    codes.Internal,
+		Message: appError.Message,
+		Details: AppErrorDetail{
+			ErrId:     appError.Details.ErrId,
+			Err:       appError.Details.Err,
+			RequestId: appError.Details.RequestId,
+		},
+	}
+}
+
+func NewUnauthenticatedError(appError AppError) *AppError {
+	return &AppError{
+		Code:    codes.Unauthenticated,
+		Message: appError.Message,
+		Details: AppErrorDetail{
+			ErrId:     appError.Details.ErrId,
+			Err:       appError.Details.Err,
+			RequestId: appError.Details.RequestId,
+		},
+	}
+}
+
+func NewForbiddenError(appError AppError) *AppError {
+	return &AppError{
+		Code:    codes.PermissionDenied,
+		Message: appError.Message,
+		Details: AppErrorDetail{
+			ErrId:     appError.Details.ErrId,
+			Err:       appError.Details.Err,
+			RequestId: appError.Details.RequestId,
+		},
+	}
+}
+
+func NewNotFoundError(appError AppError) *AppError {
+	return &AppError{
+		Code:    codes.Unimplemented,
+		Message: appError.Message,
+		Details: AppErrorDetail{
+			ErrId:     appError.Details.ErrId,
+			Err:       appError.Details.Err,
+			RequestId: appError.Details.RequestId,
+		},
+	}
+}
+
+func NewBadRequestError(appError AppError) *AppError {
+	return &AppError{
+		Code:    codes.Internal,
+		Message: appError.Message,
+		Details: AppErrorDetail{
+			ErrId:     appError.Details.ErrId,
+			Err:       appError.Details.Err,
+			RequestId: appError.Details.RequestId,
+		},
+	}
+}
 
 // Alias
 // noinspection GoUnusedGlobalVariable
 var (
-	Is = errors.Is
-	As = errors.As
-	//New          = errors.New
+	Is           = errors.Is
+	As           = errors.As
+	New          = errors.New
 	Errorf       = errors.Errorf
 	Unwrap       = errors.Unwrap
 	Wrap         = errors.Wrap
@@ -24,21 +116,3 @@ var (
 var (
 	ErrRequestMissingMetadata = errors.New("request: missing metadata")
 )
-
-func New(err error) error {
-	switch {
-	case Is(err, ErrAuthPermissionDenied):
-		return status.Error(codes.PermissionDenied, err.Error())
-	case Is(err, ErrAuthInvalidCredentials) || Is(err, ErrAuthIncorrectCredentials) ||
-		Is(err, ErrAuthAccessTokenExpired) || Is(err, ErrAuthAccessTokenIncorrect):
-		return status.Error(codes.Unauthenticated, err.Error())
-	case Is(err, ErrDatabaseRecordNotFound):
-		return status.Error(codes.NotFound, err.Error())
-	case Is(err, ErrDatabaseInternalError):
-		return status.Error(codes.Internal, err.Error())
-	case Is(err, ErrRequestMissingMetadata):
-		return status.Error(codes.InvalidArgument, ErrRequestMissingMetadata.Error())
-	}
-
-	return err
-}

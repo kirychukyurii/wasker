@@ -2,8 +2,8 @@ package migrations
 
 import (
 	"context"
-	"github.com/kirychukyurii/wasker/internal/directory/model"
-	"github.com/kirychukyurii/wasker/internal/directory/repository"
+	"github.com/kirychukyurii/wasker/internal/app/directory/model"
+	"github.com/kirychukyurii/wasker/internal/app/directory/repository"
 	model2 "github.com/kirychukyurii/wasker/internal/model"
 	"github.com/kirychukyurii/wasker/migrations/schema"
 
@@ -36,7 +36,7 @@ func Migrate(ctx context.Context, shutdowner fx.Shutdowner, logger log.Logger, d
 	}
 
 	for _, scope := range model.DefaultPermission {
-		var scopeId uint64
+		var scopeId int64
 		l := logger.Log.With().Str("scope", scope.Scope).Logger()
 
 		scopeResult, err := scopeRepository.Query(ctx, &model.ScopeQueryParam{Query: model2.QueryParam{Name: scope.Scope}})

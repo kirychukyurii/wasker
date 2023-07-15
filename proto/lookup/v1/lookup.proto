@@ -5,6 +5,6 @@ package lookup.v1;
 option go_package = "github.com/kirychukyurii/wasker/gen/go/lookup/v1";
 
 message ObjectId {
-  uint64  id = 1;
+  int64  id = 1;
   string name = 2;
 }

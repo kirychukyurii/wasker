@@ -6,8 +6,12 @@ import (
 	"github.com/hashicorp/consul/api"
 )
 
-type AgentServiceRegistration struct {
-	Registration *api.AgentServiceRegistration
+type ServiceRegistration struct {
+	Id       string
+	Service  string
+	Host     string
+	Port     int
+	Protocol string
 }
 
 type ServiceConnection struct {
@@ -36,4 +40,24 @@ func (c *ServiceDiscovery) GetByName(serviceName string) (ServiceConnections, er
 	}
 
 	return result, nil
+}
+
+func (c *ServiceDiscovery) Register(register ServiceRegistration) error {
+	registration := &api.AgentServiceRegistration{
+		ID:      register.Id,
+		Name:    register.Service,
+		Port:    register.Port,
+		Address: register.Host,
+		Connect: &api.AgentServiceConnect{
+			SidecarService: &api.AgentServiceRegistration{
+				Proxy: &api.AgentServiceConnectProxyConfig{
+					Config: map[string]interface{}{
+						"protocol": register.Protocol,
+					},
+				},
+			},
+		},
+	}
+
+	return c.Client.Agent().ServiceRegister(registration)
 }

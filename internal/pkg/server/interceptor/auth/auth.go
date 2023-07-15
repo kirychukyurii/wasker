@@ -2,20 +2,16 @@ package auth
 
 import (
 	"context"
-	"fmt"
-	"github.com/kirychukyurii/wasker/internal/directory/controller"
-	"github.com/kirychukyurii/wasker/internal/pkg/server/interceptor"
-	"strconv"
+	"github.com/kirychukyurii/wasker/internal/lib"
+	"github.com/kirychukyurii/wasker/internal/pkg/server/interceptor/requestid"
 	"strings"
 
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/status"
-
 	v1directorypb "github.com/kirychukyurii/wasker/gen/go/directory/v1"
+	"github.com/kirychukyurii/wasker/internal/app/directory/controller"
 	"github.com/kirychukyurii/wasker/internal/errors"
 	"github.com/kirychukyurii/wasker/internal/pkg/log"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 )
 
 var skipAuthServices = []string{
@@ -27,66 +23,89 @@ var (
 	typeAuthorize   = "bearer"
 )
 
+// UnaryServerInterceptor returns a server interceptor function to authenticate && authorize unary RPC
 func UnaryServerInterceptor(logger log.Logger, controller controller.Controllers) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		service := interceptor.FromContext(ctx, interceptor.ServiceCtxKey{})
-		method := interceptor.FromContext(ctx, interceptor.MethodCtxKey{})
-
-		if ok := skipAuthInterceptor(service); !ok {
+		if ok := skipAuthInterceptor(info.FullMethod); !ok {
 			return handler(ctx, req)
 		}
 
 		md, ok := metadata.FromIncomingContext(ctx)
 		if !ok {
-			return "", errors.New(errors.ErrRequestMissingMetadata)
+			return "", errors.ErrRequestMissingMetadata
 		}
 
-		token, err := authFromMD(md[headerAuthorize], typeAuthorize)
+		token, err := authFromMD(ctx, md[headerAuthorize], typeAuthorize)
 		if err != nil {
-			return nil, status.Error(codes.Unauthenticated, err.Error())
+			return nil, err
 		}
 
-		userId, err := controller.Auth.VerifyToken(ctx, token)
+		userId, err := controller.Auth.Authn(ctx, token)
 		if err != nil {
-			logger.FromContext(ctx).Log.Error().Err(err).Msg("verify token")
-			return nil, status.Error(codes.Unauthenticated, "unauthenticated")
+			return nil, err
 		}
 
-		subLogger := logger.FromContext(ctx).Log.With().Str("user", strconv.FormatUint(userId, 10)).Logger()
-		ctx = context.WithValue(ctx, log.LoggerCtxKey{}, subLogger)
+		ctx = context.WithValue(ctx, log.LoggerCtxKey{}, logger.FromContext(ctx).Log.With().Int64("user", userId).Logger())
 
-		ok, err = controller.Auth.VerifyPermission(ctx, userId, service, method)
+		service, method := splitFullMethodName(info.FullMethod)
+		ok, err = controller.Auth.Authz(ctx, userId, service, method)
 		if err != nil || !ok {
-			logger.FromContext(ctx).Log.Error().Err(err).Msg("permission denied")
-
-			return nil, status.Error(codes.PermissionDenied, fmt.Sprintf("denied: user_id=%d, service=%s, method=%s", userId, service, method))
+			return nil, err
 		}
 
 		return handler(ctx, req)
 	}
 }
 
-// AuthFromMD is a helper function for extracting the :authorization header from the gRPC metadata of the request.
+// authFromMD is a helper function for extracting the :authorization header from the gRPC metadata of the request.
 //
 // It expects the `:authorization` header to be of a certain scheme (e.g. `basic`, `bearer`), in a
 // case-insensitive format (see rfc2617, sec 1.2). If no such authorization is found, or the token
 // is of wrong scheme, an error with gRPC status `Unauthenticated` is returned.
-func authFromMD(md []string, expectedScheme string) (string, error) {
+func authFromMD(ctx context.Context, md []string, expectedScheme string) (string, error) {
 	if len(md) < 1 {
-		return "", errors.New(errors.ErrAuthAccessTokenIncorrect)
+		return "", errors.NewUnauthenticatedError(errors.AppError{
+			Message: errors.ErrAuthAccessTokenIncorrect.Error(),
+			Details: errors.AppErrorDetail{
+				ErrId:     "interceptor.auth.from_metadata.null_metadata",
+				Err:       errors.ErrAuthAccessTokenIncorrect,
+				RequestId: lib.FromContext(ctx, requestid.XRequestIDCtxKey{}).(string),
+			},
+		})
 	}
 
 	if md[0] == "" {
-		return "", errors.New(errors.ErrAuthAccessTokenIncorrect)
+		return "", errors.NewUnauthenticatedError(errors.AppError{
+			Message: errors.ErrAuthAccessTokenIncorrect.Error(),
+			Details: errors.AppErrorDetail{
+				ErrId:     "interceptor.auth.from_metadata.empty_metadata",
+				Err:       errors.ErrAuthAccessTokenIncorrect,
+				RequestId: lib.FromContext(ctx, requestid.XRequestIDCtxKey{}).(string),
+			},
+		})
 	}
 
 	scheme, token, found := strings.Cut(md[0], " ")
 	if !found {
-		return "", errors.New(errors.ErrAuthAccessTokenIncorrect)
+		return "", errors.NewUnauthenticatedError(errors.AppError{
+			Message: errors.ErrAuthAccessTokenIncorrect.Error(),
+			Details: errors.AppErrorDetail{
+				ErrId:     "interceptor.auth.from_metadata.null_authorization",
+				Err:       errors.ErrAuthAccessTokenIncorrect,
+				RequestId: lib.FromContext(ctx, requestid.XRequestIDCtxKey{}).(string),
+			},
+		})
 	}
 
 	if !strings.EqualFold(scheme, expectedScheme) {
-		return "", errors.New(errors.ErrAuthAccessTokenIncorrect)
+		return "", errors.NewUnauthenticatedError(errors.AppError{
+			Message: errors.ErrAuthAccessTokenIncorrect.Error(),
+			Details: errors.AppErrorDetail{
+				ErrId:     "interceptor.auth.from_metadata.invalid_token_type",
+				Err:       errors.ErrAuthAccessTokenIncorrect,
+				RequestId: lib.FromContext(ctx, requestid.XRequestIDCtxKey{}).(string),
+			},
+		})
 	}
 
 	return token, nil
@@ -99,4 +118,13 @@ func skipAuthInterceptor(service string) bool {
 	}
 
 	return true
+}
+
+func splitFullMethodName(fullMethod string) (string, string) {
+	fullMethod = strings.TrimPrefix(fullMethod, "/") // remove leading slash
+	if i := strings.Index(fullMethod, "/"); i >= 0 {
+		return fullMethod[:i], fullMethod[i+1:]
+	}
+
+	return "unknown", "unknown"
 }

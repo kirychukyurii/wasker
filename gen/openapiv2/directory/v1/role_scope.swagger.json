@@ -387,7 +387,7 @@
       "properties": {
         "id": {
           "type": "string",
-          "format": "uint64"
+          "format": "int64"
         },
         "name": {
           "type": "string"

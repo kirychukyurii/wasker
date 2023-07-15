@@ -1,12 +1,12 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "directory/v1/user.proto",
+    "title": "task/v1/task.proto",
     "version": "version not set"
   },
   "tags": [
     {
-      "name": "UserService"
+      "name": "TaskService"
     }
   ],
   "consumes": [
@@ -16,14 +16,14 @@
     "application/json"
   ],
   "paths": {
-    "/api/v1alpha1/directory/user": {
+    "/api/v1/task/task": {
       "get": {
-        "operationId": "UserService_ReadUser2",
+        "operationId": "TaskService_ReadTask2",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1ReadUserResponse"
+              "$ref": "#/definitions/v1ReadTaskResponse"
             }
           },
           "default": {
@@ -53,18 +53,18 @@
           }
         ],
         "tags": [
-          "UserService"
+          "TaskService"
         ]
       }
     },
-    "/api/v1alpha1/directory/users": {
+    "/api/v1/task/tasks": {
       "get": {
-        "operationId": "UserService_ListUsers",
+        "operationId": "TaskService_ListTasks",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1ListUsersResponse"
+              "$ref": "#/definitions/v1ListTasksResponse"
             }
           },
           "default": {
@@ -87,17 +87,6 @@
             "collectionFormat": "multi"
           },
           {
-            "name": "notId",
-            "in": "query",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "int64"
-            },
-            "collectionFormat": "multi"
-          },
-          {
             "name": "q",
             "in": "query",
             "required": false,
@@ -105,12 +94,6 @@
           },
           {
             "name": "name",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "username",
             "in": "query",
             "required": false,
             "type": "string"
@@ -151,16 +134,16 @@
           }
         ],
         "tags": [
-          "UserService"
+          "TaskService"
         ]
       },
       "post": {
-        "operationId": "UserService_CreateUser",
+        "operationId": "TaskService_CreateTask",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1CreateUserResponse"
+              "$ref": "#/definitions/v1CreateTaskResponse"
             }
           },
           "default": {
@@ -176,23 +159,23 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v1CreateUserRequest"
+              "$ref": "#/definitions/v1CreateTaskRequest"
             }
           }
         ],
         "tags": [
-          "UserService"
+          "TaskService"
         ]
       }
     },
-    "/api/v1alpha1/directory/users/search": {
+    "/api/v1/task/tasks/search": {
       "post": {
-        "operationId": "UserService_ListUsers2",
+        "operationId": "TaskService_ListTasks2",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1ListUsersResponse"
+              "$ref": "#/definitions/v1ListTasksResponse"
             }
           },
           "default": {
@@ -208,23 +191,23 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v1ListUsersRequest"
+              "$ref": "#/definitions/v1ListTasksRequest"
             }
           }
         ],
         "tags": [
-          "UserService"
+          "TaskService"
         ]
       }
     },
-    "/api/v1alpha1/directory/users/{id}": {
+    "/api/v1/task/tasks/{id}": {
       "get": {
-        "operationId": "UserService_ReadUser",
+        "operationId": "TaskService_ReadTask",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1ReadUserResponse"
+              "$ref": "#/definitions/v1ReadTaskResponse"
             }
           },
           "default": {
@@ -254,16 +237,16 @@
           }
         ],
         "tags": [
-          "UserService"
+          "TaskService"
         ]
       },
       "delete": {
-        "operationId": "UserService_DeleteUsers",
+        "operationId": "TaskService_DeleteTask",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1DeleteUsersResponse"
+              "$ref": "#/definitions/v1DeleteTaskResponse"
             }
           },
           "default": {
@@ -289,57 +272,18 @@
           }
         ],
         "tags": [
-          "UserService"
+          "TaskService"
         ]
       }
     },
-    "/api/v1alpha1/directory/users/{id}/logout": {
-      "post": {
-        "operationId": "UserService_LogoutUser",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1LogoutUserResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "int64"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object"
-            }
-          }
-        ],
-        "tags": [
-          "UserService"
-        ]
-      }
-    },
-    "/api/v1alpha1/directory/users/{user.id}": {
+    "/api/v1/task/tasks/{task.id}": {
       "put": {
-        "operationId": "UserService_UpdateUser",
+        "operationId": "TaskService_UpdateTask",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1UpdateUserResponse"
+              "$ref": "#/definitions/v1UpdateTaskResponse"
             }
           },
           "default": {
@@ -351,7 +295,7 @@
         },
         "parameters": [
           {
-            "name": "user.id",
+            "name": "task.id",
             "in": "path",
             "required": true,
             "type": "string",
@@ -364,22 +308,25 @@
             "schema": {
               "type": "object",
               "properties": {
-                "user": {
+                "task": {
                   "type": "object",
                   "properties": {
                     "name": {
                       "type": "string"
                     },
-                    "email": {
+                    "description": {
                       "type": "string"
                     },
-                    "username": {
+                    "link": {
                       "type": "string"
                     },
-                    "password": {
-                      "type": "string"
+                    "type": {
+                      "$ref": "#/definitions/v1ObjectId"
                     },
-                    "role": {
+                    "source": {
+                      "$ref": "#/definitions/v1ObjectId"
+                    },
+                    "customer": {
                       "$ref": "#/definitions/v1ObjectId"
                     },
                     "createdAt": {
@@ -409,7 +356,7 @@
           }
         ],
         "tags": [
-          "UserService"
+          "TaskService"
         ]
       }
     }
@@ -443,51 +390,38 @@
         }
       }
     },
-    "v1CreateUserRequest": {
+    "v1CreateTaskRequest": {
       "type": "object",
       "properties": {
-        "user": {
-          "$ref": "#/definitions/v1User"
-        },
-        "userPassword": {
-          "type": "string"
-        },
-        "confirmPassword": {
-          "type": "string"
+        "task": {
+          "$ref": "#/definitions/v1Task"
         }
       }
     },
-    "v1CreateUserResponse": {
+    "v1CreateTaskResponse": {
       "type": "object",
       "properties": {
-        "user": {
-          "$ref": "#/definitions/v1User"
+        "task": {
+          "$ref": "#/definitions/v1Task"
         }
       }
     },
-    "v1DeleteUsersResponse": {
+    "v1DeleteTaskResponse": {
       "type": "object",
       "properties": {
         "deleted": {
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/v1User"
+            "$ref": "#/definitions/v1Task"
           }
         }
       }
     },
-    "v1ListUsersRequest": {
+    "v1ListTasksRequest": {
       "type": "object",
       "properties": {
         "id": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "int64"
-          }
-        },
-        "notId": {
           "type": "array",
           "items": {
             "type": "string",
@@ -498,9 +432,6 @@
           "type": "string"
         },
         "name": {
-          "type": "string"
-        },
-        "username": {
           "type": "string"
         },
         "fields": {
@@ -525,14 +456,14 @@
         }
       }
     },
-    "v1ListUsersResponse": {
+    "v1ListTasksResponse": {
       "type": "object",
       "properties": {
         "items": {
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/v1User"
+            "$ref": "#/definitions/v1Task"
           }
         },
         "page": {
@@ -548,9 +479,6 @@
         }
       }
     },
-    "v1LogoutUserResponse": {
-      "type": "object"
-    },
     "v1ObjectId": {
       "type": "object",
       "properties": {
@@ -563,23 +491,15 @@
         }
       }
     },
-    "v1ReadUserResponse": {
+    "v1ReadTaskResponse": {
       "type": "object",
       "properties": {
-        "user": {
-          "$ref": "#/definitions/v1User"
+        "task": {
+          "$ref": "#/definitions/v1Task"
         }
       }
     },
-    "v1UpdateUserResponse": {
-      "type": "object",
-      "properties": {
-        "updated": {
-          "$ref": "#/definitions/v1User"
-        }
-      }
-    },
-    "v1User": {
+    "v1Task": {
       "type": "object",
       "properties": {
         "id": {
@@ -589,16 +509,19 @@
         "name": {
           "type": "string"
         },
-        "email": {
+        "description": {
           "type": "string"
         },
-        "username": {
+        "link": {
           "type": "string"
         },
-        "password": {
-          "type": "string"
+        "type": {
+          "$ref": "#/definitions/v1ObjectId"
         },
-        "role": {
+        "source": {
+          "$ref": "#/definitions/v1ObjectId"
+        },
+        "customer": {
           "$ref": "#/definitions/v1ObjectId"
         },
         "createdAt": {
@@ -614,6 +537,14 @@
         },
         "updatedBy": {
           "$ref": "#/definitions/v1ObjectId"
+        }
+      }
+    },
+    "v1UpdateTaskResponse": {
+      "type": "object",
+      "properties": {
+        "updated": {
+          "$ref": "#/definitions/v1Task"
         }
       }
     }

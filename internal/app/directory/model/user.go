@@ -7,11 +7,11 @@ import (
 type User struct {
 	model.Model
 
-	Name     string                      `json:"name" db:"name"`
-	Email    string                      `json:"email" validate:"required,email" db:"email"`
-	UserName string                      `json:"username" validate:"required" db:"user_name"`
-	Password string                      `json:"password" validate:"required" db:"password"`
-	Role     *model.NullableLookupEntity `json:"role" db:"role"`
+	Name     string              `json:"name" db:"name"`
+	Email    string              `json:"email" validate:"required,email" db:"email"`
+	UserName string              `json:"username" validate:"required" db:"user_name"`
+	Password string              `json:"password" validate:"required" db:"password"`
+	Role     *model.LookupEntity `json:"role" db:"role"`
 }
 
 type Users []*User

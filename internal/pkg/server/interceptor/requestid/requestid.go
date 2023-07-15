@@ -2,54 +2,44 @@ package requestid
 
 import (
 	"context"
+	"github.com/kirychukyurii/wasker/internal/lib"
+	"github.com/kirychukyurii/wasker/internal/pkg/log"
 
-	"github.com/google/uuid"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
 
-type key struct{}
+type XRequestIDCtxKey struct{}
 
-// DefaultXRequestIDKey is metadata key name for request ID
-var DefaultXRequestIDKey = "x-request-id"
+// XRequestIDKey is metadata key name for request ID
+var XRequestIDKey = "x-request-id"
 
-func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
+func UnaryServerInterceptor(logger log.Logger) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		requestID := HandleRequestID(ctx)
-		ctx = context.WithValue(ctx, key{}, requestID)
+		reqId := handleRequestID(ctx)
 
-		return handler(ctx, req)
+		childCtx := lib.ContextWithValue(ctx, XRequestIDCtxKey{}, reqId)
+		childCtx = lib.ContextWithValue(childCtx, log.LoggerCtxKey{}, logger.Log.With().Str(XRequestIDKey, reqId).Logger())
+
+		return handler(childCtx, req)
 	}
 }
 
-func FromContext(ctx context.Context) string {
-	id, ok := ctx.Value(key{}).(string)
-	if !ok {
-		return ""
-	}
-
-	return id
-}
-
-func HandleRequestID(ctx context.Context) string {
+func handleRequestID(ctx context.Context) string {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
-		return newRequestID()
+		return lib.NewUUID()
 	}
 
-	header, ok := md[DefaultXRequestIDKey]
+	header, ok := md[XRequestIDKey]
 	if !ok || len(header) == 0 {
-		return newRequestID()
+		return lib.NewUUID()
 	}
 
 	requestID := header[0]
 	if requestID == "" {
-		return newRequestID()
+		return lib.NewUUID()
 	}
 
 	return requestID
-}
-
-func newRequestID() string {
-	return uuid.New().String()
 }

@@ -2,8 +2,7 @@ package controller
 
 import (
 	"context"
-	"github.com/kirychukyurii/wasker/internal/directory/service"
-
+	"github.com/kirychukyurii/wasker/internal/app/directory/service"
 	"github.com/kirychukyurii/wasker/internal/pkg/log"
 
 	pb "github.com/kirychukyurii/wasker/gen/go/directory/v1"
@@ -41,8 +40,8 @@ func (a UserController) ReadUser(ctx context.Context, request *pb.ReadUserReques
 			Username: u.UserName,
 			Password: "",
 			Role: &lookup.ObjectId{
-				Id:   *u.Role.Id,
-				Name: *u.Role.Name,
+				Id:   u.Role.Id,
+				Name: u.Role.Name,
 			},
 			CreatedAt: u.CreatedAt.Unix(),
 			CreatedBy: &lookup.ObjectId{

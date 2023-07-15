@@ -62,9 +62,11 @@ func toLevel(level string) zerolog.Level {
 }
 
 func (l *Logger) FromContext(ctx context.Context) *Logger {
-	logger := ctx.Value(LoggerCtxKey{}).(zerolog.Logger)
+	logger := ctx.Value(LoggerCtxKey{})
 
-	return &Logger{
-		Log: logger,
+	if logger != nil {
+		l.Log = logger.(zerolog.Logger)
 	}
+
+	return l
 }

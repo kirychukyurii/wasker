@@ -5,20 +5,19 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/google/uuid"
-	consulapi "github.com/hashicorp/consul/api"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxevent"
 
+	"github.com/kirychukyurii/wasker/internal/app/directory/controller"
+	"github.com/kirychukyurii/wasker/internal/app/directory/repository"
+	directoryserver "github.com/kirychukyurii/wasker/internal/app/directory/server"
+	"github.com/kirychukyurii/wasker/internal/app/directory/service"
 	"github.com/kirychukyurii/wasker/internal/config"
 	"github.com/kirychukyurii/wasker/internal/constants"
-	"github.com/kirychukyurii/wasker/internal/directory/controller"
-	"github.com/kirychukyurii/wasker/internal/directory/repository"
-	"github.com/kirychukyurii/wasker/internal/directory/server/register"
-	"github.com/kirychukyurii/wasker/internal/directory/service"
 	"github.com/kirychukyurii/wasker/internal/errors"
+	"github.com/kirychukyurii/wasker/internal/lib"
 	"github.com/kirychukyurii/wasker/internal/pkg"
 	"github.com/kirychukyurii/wasker/internal/pkg/consul"
 	"github.com/kirychukyurii/wasker/internal/pkg/db"
@@ -71,21 +70,21 @@ var Module = fx.Options(
 
 func runApplication(lifecycle fx.Lifecycle, cfg config.Config, logger log.Logger, db db.Database,
 	grpcServer server.GrpcServer, discovery consul.ServiceDiscovery, controller controller.Controllers) {
-	serviceId := fmt.Sprintf("%s-%s", constants.DirectoryServiceName, uuid.New().String())
+	serviceId := fmt.Sprintf("%s-%s", constants.DirectoryServiceName, lib.NewUUID())
 	subLogger := logger.Log.With().Str("service-id", serviceId).Logger()
 
 	lifecycle.Append(fx.Hook{
 		OnStart: func(context.Context) error {
 			subLogger.Info().Str("grpc-listen", cfg.Grpc.ListenAddr()).Msg("starting application")
-
-			registration := &consulapi.AgentServiceRegistration{
-				ID:      serviceId,
-				Name:    constants.DirectoryServiceName,
-				Port:    cfg.Grpc.Port,
-				Address: cfg.Grpc.Host,
+			svcReg := consul.ServiceRegistration{
+				Id:       serviceId,
+				Service:  constants.DirectoryServiceName,
+				Host:     cfg.Grpc.Host,
+				Port:     cfg.Grpc.Port,
+				Protocol: "http2",
 			}
 
-			err := discovery.Client.Agent().ServiceRegister(registration)
+			err := discovery.Register(svcReg)
 			if err != nil {
 				subLogger.Fatal().Err(err).Msg("register service")
 			}
@@ -97,7 +96,7 @@ func runApplication(lifecycle fx.Lifecycle, cfg config.Config, logger log.Logger
 				}
 
 				// register controllers on the gRPC server
-				register.GrpcDirectoryServiceServers(grpcServer.Server, controller)
+				directoryserver.GrpcDirectoryServiceServers(grpcServer.Server, controller)
 
 				// the gRPC server
 				if err := grpcServer.Server.Serve(l); err != nil {

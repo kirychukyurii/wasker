@@ -5,7 +5,7 @@ import (
 )
 
 type Model struct {
-	Id uint64 `json:"id" db:"id"`
+	Id int64 `json:"id" db:"id"`
 
 	CreatedAt time.Time    `json:"created_at" db:"created_at"`
 	CreatedBy LookupEntity `json:"created_by" db:"created_by"`
@@ -18,11 +18,11 @@ type Model struct {
 }
 
 type LookupEntity struct {
-	Id   uint64 `json:"id,omitempty" db:"id"`
+	Id   int64  `json:"id,omitempty" db:"id"`
 	Name string `json:"name,omitempty" db:"name"`
 }
 
 type NullableLookupEntity struct {
-	Id   *uint64 `json:"id,omitempty" db:"id"`
+	Id   *int64  `json:"id,omitempty" db:"id"`
 	Name *string `json:"name,omitempty" db:"name"`
 }

@@ -3,11 +3,12 @@ package repository
 import (
 	"context"
 	"fmt"
-	"github.com/jackc/pgx/v5"
-	"github.com/kirychukyurii/wasker/internal/directory/model"
-
 	sq "github.com/Masterminds/squirrel"
 	scan "github.com/georgysavva/scany/v2/pgxscan"
+	"github.com/jackc/pgx/v5"
+	"github.com/kirychukyurii/wasker/internal/app/directory/model"
+	"github.com/kirychukyurii/wasker/internal/lib"
+	"github.com/kirychukyurii/wasker/internal/pkg/server/interceptor/requestid"
 
 	"github.com/kirychukyurii/wasker/internal/errors"
 	"github.com/kirychukyurii/wasker/internal/pkg/db"
@@ -33,21 +34,31 @@ func (a AuthRepository) Login(ctx context.Context, login *model.UserSession) err
 
 	sql, args, err := q.ToSql()
 	if err != nil {
-		a.logger.FromContext(ctx).Log.Error().Err(err).Msg(errors.ErrDatabaseBuildSql.Error())
-
-		return errors.ErrDatabaseInternalError
+		return errors.NewInternalError(errors.AppError{
+			Message: errors.ErrDatabaseInternalError.Error(),
+			Details: errors.AppErrorDetail{
+				ErrId:     "repository.auth.login.build_query",
+				Err:       err,
+				RequestId: lib.FromContext(ctx, requestid.XRequestIDCtxKey{}).(string),
+			},
+		})
 	}
 
 	if _, err = a.db.Pool.Exec(ctx, sql, args...); err != nil {
-		a.logger.FromContext(ctx).Log.Error().Err(err).Msg(errors.ErrDatabaseQueryRow.Error())
-
-		return errors.ErrDatabaseInternalError
+		return errors.NewInternalError(errors.AppError{
+			Message: errors.ErrDatabaseInternalError.Error(),
+			Details: errors.AppErrorDetail{
+				ErrId:     "repository.auth.login.build_query",
+				Err:       err,
+				RequestId: lib.FromContext(ctx, requestid.XRequestIDCtxKey{}).(string),
+			},
+		})
 	}
 
 	return nil
 }
 
-func (a AuthRepository) VerifyToken(ctx context.Context, token string) (*model.UserSession, error) {
+func (a AuthRepository) Authn(ctx context.Context, token string) (*model.UserSession, error) {
 	var session model.UserSession
 
 	q := a.db.Dialect().Select("id", `user_id "user.id"`, "created_at", "access_token", "network_ip", "expires_at").
@@ -56,26 +67,39 @@ func (a AuthRepository) VerifyToken(ctx context.Context, token string) (*model.U
 
 	sql, args, err := q.ToSql()
 	if err != nil {
-		a.logger.FromContext(ctx).Log.Error().Err(err).Msg(errors.ErrDatabaseBuildSql.Error())
-
-		return nil, errors.ErrDatabaseInternalError
+		return nil, errors.NewInternalError(errors.AppError{
+			Message: errors.ErrDatabaseInternalError.Error(),
+			Details: errors.AppErrorDetail{
+				ErrId:     "repository.auth.authn.build_query",
+				Err:       err,
+				RequestId: lib.FromContext(ctx, requestid.XRequestIDCtxKey{}).(string),
+			},
+		})
 	}
 
 	if err := scan.Get(ctx, a.db.Pool, &session, sql, args...); err != nil {
-		a.logger.FromContext(ctx).Log.Error().Err(err).Msg(errors.ErrDatabaseQueryRow.Error())
-
+		var dbErr error
 		switch {
 		case errors.Is(err, pgx.ErrNoRows):
-			return nil, errors.ErrDatabaseRecordNotFound
+			dbErr = errors.ErrDatabaseRecordNotFound
 		default:
-			return nil, errors.ErrDatabaseInternalError
+			dbErr = errors.ErrDatabaseInternalError
 		}
+
+		return nil, errors.NewInternalError(errors.AppError{
+			Message: dbErr.Error(),
+			Details: errors.AppErrorDetail{
+				ErrId:     "repository.auth.authn.exec_query",
+				Err:       err,
+				RequestId: lib.FromContext(ctx, requestid.XRequestIDCtxKey{}).(string),
+			},
+		})
 	}
 
 	return &session, nil
 }
 
-func (a AuthRepository) VerifyPermission(ctx context.Context, userId uint64, service, method string) (endpoint, permission uint8, err error) {
+func (a AuthRepository) Authz(ctx context.Context, userId int64, service, method string) (endpoint, permission uint8, err error) {
 	fullMethod := fmt.Sprintf("%s%s", service, method)
 
 	q := a.db.Dialect().Select("se.bit as endpoint_bit", "rp.bit as permission_bit").From("auth_role_permission rp").

@@ -3,8 +3,8 @@ package migrate
 import (
 	"context"
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/kirychukyurii/wasker/internal/app/directory/repository"
 	"github.com/kirychukyurii/wasker/internal/config"
-	repository2 "github.com/kirychukyurii/wasker/internal/directory/repository"
 	"github.com/kirychukyurii/wasker/internal/pkg/db"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -54,11 +54,11 @@ var Command = &cobra.Command{
 var Module = fx.Options(
 	config.Module,
 	pkg.Module,
-	repository2.Module,
+	repository.Module,
 	fx.Invoke(runApplication),
 )
 
-func runApplication(lifecycle fx.Lifecycle, shutdowner fx.Shutdowner, logger log.Logger, db db.Database, scopeRepository repository2.ScopeRepository) {
+func runApplication(lifecycle fx.Lifecycle, shutdowner fx.Shutdowner, logger log.Logger, db db.Database, scopeRepository repository.ScopeRepository) {
 	lifecycle.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			logger.Log.Info().Msg("starting migrations")

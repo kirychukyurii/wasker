@@ -2,8 +2,8 @@ package service
 
 import (
 	"context"
-	"github.com/kirychukyurii/wasker/internal/directory/model"
-	"github.com/kirychukyurii/wasker/internal/directory/repository"
+	"github.com/kirychukyurii/wasker/internal/app/directory/model"
+	"github.com/kirychukyurii/wasker/internal/app/directory/repository"
 	"github.com/kirychukyurii/wasker/internal/pkg/log"
 )
 
@@ -19,7 +19,7 @@ func NewUserService(logger log.Logger, userRepository repository.UserRepository)
 	}
 }
 
-func (a UserService) ReadUser(ctx context.Context, userId uint64) (*model.User, error) {
+func (a UserService) ReadUser(ctx context.Context, userId int64) (*model.User, error) {
 	u, err := a.userRepository.ReadUser(ctx, userId)
 	if err != nil {
 		return nil, err

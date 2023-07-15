@@ -6,6 +6,7 @@ option go_package = "github.com/kirychukyurii/wasker/gen/go/directory/v1";
 
 import "lookup/v1/lookup.proto";
 import "google/api/annotations.proto";
+import "google/rpc/error_details.proto";
 
 service UserService {
   rpc ReadUser(ReadUserRequest) returns (ReadUserResponse) {
@@ -56,7 +57,7 @@ service UserService {
 }
 
 message User {
-  uint64  id = 1;
+  int64 id = 1;
   string name = 2;
   string email = 3;
   string username = 4;
@@ -81,7 +82,7 @@ message CreateUserResponse {
 }
 
 message ReadUserRequest {
-  uint64 id = 1;
+  int64 id = 1;
   repeated string fields = 2;
 }
 
@@ -99,7 +100,7 @@ message UpdateUserResponse {
 }
 
 message DeleteUsersRequest {
-  uint64 id = 1;
+  int64 id = 1;
   bool permanent = 2;
 }
 
@@ -108,8 +109,8 @@ message DeleteUsersResponse {
 }
 
 message ListUsersRequest {
-  repeated uint64 id = 1;
-  repeated uint64 not_id = 2;
+  repeated int64 id = 1;
+  repeated int64 not_id = 2;
   string q = 3;
   string name = 4;
   string username = 5;
@@ -129,7 +130,7 @@ message ListUsersResponse {
 }
 
 message UpdatePasswordRequest {
-  uint64  id = 1;
+  int64  id = 1;
   string old_password = 2;
   string user_password = 3;
   string confirm_password = 4;
@@ -138,7 +139,7 @@ message UpdatePasswordRequest {
 message UpdatePasswordResponse {}
 
 message LogoutUserRequest {
-  uint64 id = 1;
+  int64 id = 1;
 }
 
 message LogoutUserResponse {}

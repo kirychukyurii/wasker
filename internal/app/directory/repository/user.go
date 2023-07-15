@@ -5,7 +5,7 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	scan "github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5"
-	"github.com/kirychukyurii/wasker/internal/directory/model"
+	"github.com/kirychukyurii/wasker/internal/app/directory/model"
 	model2 "github.com/kirychukyurii/wasker/internal/model"
 
 	"github.com/kirychukyurii/wasker/internal/errors"
@@ -25,7 +25,7 @@ func NewUserRepository(db db.Database, logger log.Logger) UserRepository {
 	}
 }
 
-func (a UserRepository) ReadUser(ctx context.Context, userId uint64) (*model.User, error) {
+func (a UserRepository) ReadUser(ctx context.Context, userId int64) (*model.User, error) {
 	var user model.User
 
 	q := a.db.Dialect().Select("u.id", "coalesce(u.name, u.user_name) AS name", "u.user_name", "u.password", "u.email",

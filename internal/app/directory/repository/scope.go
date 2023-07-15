@@ -5,7 +5,7 @@ import (
 	"fmt"
 	scan "github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5"
-	"github.com/kirychukyurii/wasker/internal/directory/model"
+	"github.com/kirychukyurii/wasker/internal/app/directory/model"
 	model2 "github.com/kirychukyurii/wasker/internal/model"
 
 	sq "github.com/Masterminds/squirrel"
@@ -27,8 +27,8 @@ func NewScopeRepository(db db.Database, logger log.Logger) ScopeRepository {
 	}
 }
 
-func (a ScopeRepository) Create(ctx context.Context, scope *model.Scope) (uint64, error) {
-	var rowId uint64
+func (a ScopeRepository) Create(ctx context.Context, scope *model.Scope) (int64, error) {
+	var rowId int64
 
 	q := a.db.Dialect().Insert("auth_scope").
 		Columns("name").Values(scope.Name).Suffix("RETURNING id")

@@ -3,15 +3,15 @@ package server
 import (
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/recovery"
-	"github.com/kirychukyurii/wasker/internal/config"
-	"github.com/kirychukyurii/wasker/internal/directory/controller"
-	interceptor2 "github.com/kirychukyurii/wasker/internal/pkg/server/interceptor"
-	"github.com/kirychukyurii/wasker/internal/pkg/server/interceptor/auth"
-	"github.com/kirychukyurii/wasker/internal/pkg/server/interceptor/requestid"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
+	"github.com/kirychukyurii/wasker/internal/app/directory/controller"
+	"github.com/kirychukyurii/wasker/internal/config"
 	"github.com/kirychukyurii/wasker/internal/pkg/log"
+	"github.com/kirychukyurii/wasker/internal/pkg/server/interceptor"
+	"github.com/kirychukyurii/wasker/internal/pkg/server/interceptor/auth"
+	"github.com/kirychukyurii/wasker/internal/pkg/server/interceptor/requestid"
 )
 
 type GrpcServer struct {
@@ -19,16 +19,16 @@ type GrpcServer struct {
 }
 
 func NewGrpcServer(cfg config.Config, logger log.Logger, controller controller.Controllers) GrpcServer {
-	l, opts := interceptor2.NewGrpcLoggingHandler(logger)
-	r := recovery.WithRecoveryHandler(interceptor2.NewGrpcPanicRecoveryHandler(logger))
+	l, opts := interceptor.NewGrpcLoggingHandler(logger)
+	r := recovery.WithRecoveryHandler(interceptor.NewGrpcPanicRecoveryHandler(logger))
 
 	// create new gRPC server
 	s := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
-			requestid.UnaryServerInterceptor(),
-			interceptor2.ContextUnaryServerInterceptor(cfg, logger),
-			auth.UnaryServerInterceptor(logger, controller),
+			interceptor.ErrorUnaryServerInterceptor(),
+			requestid.UnaryServerInterceptor(logger),
 			logging.UnaryServerInterceptor(l, opts...),
+			auth.UnaryServerInterceptor(logger, controller),
 			recovery.UnaryServerInterceptor(r),
 			// Add any other interceptor you want.
 		),

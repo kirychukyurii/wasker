@@ -2,25 +2,24 @@ package service
 
 import (
 	"context"
-	model2 "github.com/kirychukyurii/wasker/internal/directory/model"
-	repository2 "github.com/kirychukyurii/wasker/internal/directory/repository"
-	"github.com/kirychukyurii/wasker/internal/model"
-	"github.com/kirychukyurii/wasker/internal/pkg/server/interceptor"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
 
+	"github.com/kirychukyurii/wasker/internal/app/directory/model"
+	"github.com/kirychukyurii/wasker/internal/app/directory/repository"
 	"github.com/kirychukyurii/wasker/internal/errors"
+	lookup "github.com/kirychukyurii/wasker/internal/model"
 	"github.com/kirychukyurii/wasker/internal/pkg/log"
 )
 
 type AuthService struct {
 	logger         log.Logger
-	authRepository repository2.AuthRepository
-	userRepository repository2.UserRepository
+	authRepository repository.AuthRepository
+	userRepository repository.UserRepository
 }
 
-func NewAuthService(logger log.Logger, authRepository repository2.AuthRepository, userRepository repository2.UserRepository) AuthService {
+func NewAuthService(logger log.Logger, authRepository repository.AuthRepository, userRepository repository.UserRepository) AuthService {
 	return AuthService{
 		logger:         logger,
 		authRepository: authRepository,
@@ -28,10 +27,10 @@ func NewAuthService(logger log.Logger, authRepository repository2.AuthRepository
 	}
 }
 
-func (a AuthService) Login(ctx context.Context, login *model2.UserLogin) error {
-	var user *model2.User
+func (a AuthService) Login(ctx context.Context, login *model.UserLogin) error {
+	var user *model.User
 
-	users, err := a.userRepository.Query(ctx, &model2.UserQueryParam{UserName: login.Username})
+	users, err := a.userRepository.Query(ctx, &model.UserQueryParam{UserName: login.Username})
 	if err != nil {
 		return err
 	}
@@ -50,12 +49,12 @@ func (a AuthService) Login(ctx context.Context, login *model2.UserLogin) error {
 	}
 
 	createdAt := time.Now()
-	token := &model2.UserSession{
-		User: model.LookupEntity{
+	token := &model.UserSession{
+		User: lookup.LookupEntity{
 			Id: user.Id,
 		},
-		NetworkIp:   interceptor.FromContext(ctx, interceptor.ClientIPCtxKey{}),
-		AccessToken: model2.NewID(),
+		NetworkIp:   "0.0.0.0", // fixme
+		AccessToken: model.NewID(),
 		CreatedAt:   createdAt,
 		ExpiresAt:   createdAt.Add(10 * time.Hour),
 	}
@@ -68,8 +67,8 @@ func (a AuthService) Login(ctx context.Context, login *model2.UserLogin) error {
 	return nil
 }
 
-func (a AuthService) VerifyToken(ctx context.Context, token string) (*model2.UserSession, error) {
-	s, err := a.authRepository.VerifyToken(ctx, token)
+func (a AuthService) Authn(ctx context.Context, token string) (*model.UserSession, error) {
+	s, err := a.authRepository.Authn(ctx, token)
 	if err != nil {
 		return nil, err
 	}
@@ -77,8 +76,8 @@ func (a AuthService) VerifyToken(ctx context.Context, token string) (*model2.Use
 	return s, nil
 }
 
-func (a AuthService) VerifyPermission(ctx context.Context, userId uint64, service, method string) (bool, error) {
-	endpoint, permission, err := a.authRepository.VerifyPermission(ctx, userId, service, method)
+func (a AuthService) Authz(ctx context.Context, userId int64, service, method string) (bool, error) {
+	endpoint, permission, err := a.authRepository.Authz(ctx, userId, service, method)
 	if err != nil {
 		return false, errors.ErrAuthPermissionDenied
 	}
