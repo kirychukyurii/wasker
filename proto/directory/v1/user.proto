@@ -5,6 +5,7 @@ package directory.v1;
 option go_package = "github.com/kirychukyurii/wasker/gen/go/directory/v1";
 
 import "lookup/v1/lookup.proto";
+
 import "google/api/annotations.proto";
 import "google/rpc/error_details.proto";
 

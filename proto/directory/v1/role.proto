@@ -6,7 +6,9 @@ option go_package = "github.com/kirychukyurii/wasker/gen/go/directory/v1";
 
 import "lookup/v1/lookup.proto";
 import "directory/v1/role_scope.proto";
+
 import "google/api/annotations.proto";
+import "google/rpc/error_details.proto";
 
 service RoleService {
   rpc ReadRole(ReadRoleRequest) returns (ReadRoleResponse) {

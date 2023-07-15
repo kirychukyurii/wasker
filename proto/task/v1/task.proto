@@ -5,7 +5,9 @@ package task.v1;
 option go_package = "github.com/kirychukyurii/wasker/gen/go/task/v1";
 
 import "lookup/v1/lookup.proto";
+
 import "google/api/annotations.proto";
+import "google/rpc/error_details.proto";
 
 service TaskService {
   rpc ReadTask(ReadTaskRequest) returns (ReadTaskResponse) {
