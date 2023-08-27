@@ -17,15 +17,13 @@ func ErrorUnaryServerInterceptor() grpc.UnaryServerInterceptor {
 			appErr := err.(*errors.AppError)
 			if appErr != nil {
 				s := status.New(appErr.Code, appErr.Message)
-				sd, wdErr := s.WithDetails(
-					&errdetails.RequestInfo{
-						RequestId: appErr.Details.RequestId,
+				sd, wdErr := s.WithDetails(&errdetails.ErrorInfo{
+					Reason: appErr.Details.ErrReason,
+					Domain: appErr.Details.ErrDomain,
+					Metadata: map[string]string{
+						"request_id": appErr.Details.RequestId,
 					},
-					&errdetails.ErrorInfo{
-						Reason: appErr.Details.Err.Error(),
-						Domain: appErr.Details.ErrId,
-						// Metadata: nil,
-					},
+				},
 				)
 
 				if wdErr != nil {

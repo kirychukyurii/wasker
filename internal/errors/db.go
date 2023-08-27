@@ -8,3 +8,8 @@ var (
 	ErrDatabaseQueryRow       = errors.New("database: querying rows")
 	ErrDatabaseBuildSql       = errors.New("database: building SQL statement")
 )
+
+var (
+	ErrBuildQueryReason = "BUILD_QUERY"
+	ErrExecQueryReason  = "EXEC_QUERY"
+)

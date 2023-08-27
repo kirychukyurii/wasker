@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"github.com/kirychukyurii/wasker/internal/lib"
+	"github.com/kirychukyurii/wasker/internal/pkg/server/interceptor/requestid"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -31,21 +33,30 @@ func (a AuthService) Login(ctx context.Context, login *model.UserLogin) error {
 	var user *model.User
 
 	users, err := a.userRepository.Query(ctx, &model.UserQueryParam{UserName: login.Username})
-	if err != nil {
-		return err
+	if err != nil || len(users.List) < 1 {
+		return errors.NewBadRequestError(errors.AppError{
+			Message: errors.ErrAuthInvalidCredentials.Error(),
+			Details: errors.AppErrorDetail{
+				Err:       err,
+				ErrReason: "INVALID_CREDENTIALS",
+				ErrDomain: "service.auth.login",
+				RequestId: lib.FromContext(ctx, requestid.XRequestIDCtxKey{}).(string),
+			},
+		})
 	}
 
-	if len(users.List) > 0 {
-		user = users.List[0]
-	} else {
-		return errors.ErrAuthIncorrectCredentials
-	}
-
-	hashedPassword := user.Password
-	if err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(login.Password)); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(users.List[0].Password), []byte(login.Password)); err != nil {
 		// bcrypt.ErrHashTooShort
 		// bcrypt.ErrMismatchedHashAndPassword
-		return errors.ErrAuthIncorrectCredentials
+		return errors.NewBadRequestError(errors.AppError{
+			Message: errors.ErrAuthInvalidCredentials.Error(),
+			Details: errors.AppErrorDetail{
+				Err:       err,
+				ErrReason: "INVALID_CREDENTIALS",
+				ErrDomain: "service.auth.login",
+				RequestId: lib.FromContext(ctx, requestid.XRequestIDCtxKey{}).(string),
+			},
+		})
 	}
 
 	createdAt := time.Now()
@@ -59,8 +70,7 @@ func (a AuthService) Login(ctx context.Context, login *model.UserLogin) error {
 		ExpiresAt:   createdAt.Add(10 * time.Hour),
 	}
 
-	err = a.authRepository.Login(ctx, token)
-	if err != nil {
+	if err := a.authRepository.Login(ctx, token); err != nil {
 		return err
 	}
 
@@ -79,12 +89,20 @@ func (a AuthService) Authn(ctx context.Context, token string) (*model.UserSessio
 func (a AuthService) Authz(ctx context.Context, userId int64, service, method string) (bool, error) {
 	endpoint, permission, err := a.authRepository.Authz(ctx, userId, service, method)
 	if err != nil {
-		return false, errors.ErrAuthPermissionDenied
+		return false, err
 	}
 
 	ok := permission & endpoint
 	if ok == 0 {
-		return false, errors.ErrAuthPermissionDenied
+		return false, errors.NewForbiddenError(errors.AppError{
+			Message: errors.ErrAuthPermissionDenied.Error(),
+			Details: errors.AppErrorDetail{
+				Err:       errors.ErrAuthPermissionDenied,
+				ErrReason: "PERMISSION_DENIED",
+				ErrDomain: "service.auth.authz",
+				RequestId: lib.FromContext(ctx, requestid.XRequestIDCtxKey{}).(string),
+			},
+		})
 	}
 
 	return true, nil

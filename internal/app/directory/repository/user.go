@@ -6,7 +6,9 @@ import (
 	scan "github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5"
 	"github.com/kirychukyurii/wasker/internal/app/directory/model"
+	"github.com/kirychukyurii/wasker/internal/lib"
 	model2 "github.com/kirychukyurii/wasker/internal/model"
+	"github.com/kirychukyurii/wasker/internal/pkg/server/interceptor/requestid"
 
 	"github.com/kirychukyurii/wasker/internal/errors"
 	"github.com/kirychukyurii/wasker/internal/pkg/db"
@@ -39,20 +41,35 @@ func (a UserRepository) ReadUser(ctx context.Context, userId int64) (*model.User
 
 	sql, args, err := q.ToSql()
 	if err != nil {
-		a.logger.FromContext(ctx).Log.Error().Err(err).Msg(errors.ErrDatabaseBuildSql.Error())
-
-		return nil, errors.ErrDatabaseInternalError
+		return nil, errors.NewInternalError(errors.AppError{
+			Message: errors.ErrDatabaseInternalError.Error(),
+			Details: errors.AppErrorDetail{
+				Err:       err,
+				ErrReason: errors.ErrBuildQueryReason,
+				ErrDomain: "repository.user.read",
+				RequestId: lib.FromContext(ctx, requestid.XRequestIDCtxKey{}).(string),
+			},
+		})
 	}
 
 	if err = scan.Get(ctx, a.db.Pool, &user, sql, args...); err != nil {
-		a.logger.FromContext(ctx).Log.Error().Err(err).Msg(errors.ErrDatabaseQueryRow.Error())
-
+		var dbErr error
 		switch {
 		case errors.Is(err, pgx.ErrNoRows):
-			return nil, errors.ErrDatabaseRecordNotFound
+			dbErr = errors.ErrDatabaseRecordNotFound
 		default:
-			return nil, errors.ErrDatabaseInternalError
+			dbErr = errors.ErrDatabaseInternalError
 		}
+
+		return nil, errors.NewInternalError(errors.AppError{
+			Message: dbErr.Error(),
+			Details: errors.AppErrorDetail{
+				Err:       err,
+				ErrReason: errors.ErrExecQueryReason,
+				ErrDomain: "repository.user.read",
+				RequestId: lib.FromContext(ctx, requestid.XRequestIDCtxKey{}).(string),
+			},
+		})
 	}
 
 	return &user, nil
@@ -94,20 +111,35 @@ func (a UserRepository) Query(ctx context.Context, param *model.UserQueryParam) 
 
 	sql, args, err := q.ToSql()
 	if err != nil {
-		a.logger.FromContext(ctx).Log.Error().Err(err).Msg(errors.ErrDatabaseBuildSql.Error())
-
-		return nil, errors.ErrDatabaseInternalError
+		return nil, errors.NewInternalError(errors.AppError{
+			Message: errors.ErrDatabaseInternalError.Error(),
+			Details: errors.AppErrorDetail{
+				Err:       err,
+				ErrReason: errors.ErrBuildQueryReason,
+				ErrDomain: "repository.user.query",
+				RequestId: lib.FromContext(ctx, requestid.XRequestIDCtxKey{}).(string),
+			},
+		})
 	}
 
 	if err = scan.Select(ctx, a.db.Pool, &list, sql, args...); err != nil {
-		a.logger.FromContext(ctx).Log.Error().Err(err).Msg(errors.ErrDatabaseQueryRow.Error())
-
+		var dbErr error
 		switch {
 		case errors.Is(err, pgx.ErrNoRows):
-			return nil, errors.ErrDatabaseRecordNotFound
+			dbErr = errors.ErrDatabaseRecordNotFound
 		default:
-			return nil, errors.ErrDatabaseInternalError
+			dbErr = errors.ErrDatabaseInternalError
 		}
+
+		return nil, errors.NewInternalError(errors.AppError{
+			Message: dbErr.Error(),
+			Details: errors.AppErrorDetail{
+				Err:       err,
+				ErrReason: errors.ErrExecQueryReason,
+				ErrDomain: "repository.user.query",
+				RequestId: lib.FromContext(ctx, requestid.XRequestIDCtxKey{}).(string),
+			},
+		})
 	}
 
 	pagination.Current = current

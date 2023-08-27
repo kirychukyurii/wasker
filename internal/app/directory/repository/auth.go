@@ -37,8 +37,9 @@ func (a AuthRepository) Login(ctx context.Context, login *model.UserSession) err
 		return errors.NewInternalError(errors.AppError{
 			Message: errors.ErrDatabaseInternalError.Error(),
 			Details: errors.AppErrorDetail{
-				ErrId:     "repository.auth.login.build_query",
 				Err:       err,
+				ErrReason: errors.ErrBuildQueryReason,
+				ErrDomain: "repository.auth.login",
 				RequestId: lib.FromContext(ctx, requestid.XRequestIDCtxKey{}).(string),
 			},
 		})
@@ -48,8 +49,9 @@ func (a AuthRepository) Login(ctx context.Context, login *model.UserSession) err
 		return errors.NewInternalError(errors.AppError{
 			Message: errors.ErrDatabaseInternalError.Error(),
 			Details: errors.AppErrorDetail{
-				ErrId:     "repository.auth.login.build_query",
 				Err:       err,
+				ErrReason: errors.ErrExecQueryReason,
+				ErrDomain: "repository.auth.login",
 				RequestId: lib.FromContext(ctx, requestid.XRequestIDCtxKey{}).(string),
 			},
 		})
@@ -70,8 +72,9 @@ func (a AuthRepository) Authn(ctx context.Context, token string) (*model.UserSes
 		return nil, errors.NewInternalError(errors.AppError{
 			Message: errors.ErrDatabaseInternalError.Error(),
 			Details: errors.AppErrorDetail{
-				ErrId:     "repository.auth.authn.build_query",
 				Err:       err,
+				ErrReason: errors.ErrBuildQueryReason,
+				ErrDomain: "repository.auth.authn",
 				RequestId: lib.FromContext(ctx, requestid.XRequestIDCtxKey{}).(string),
 			},
 		})
@@ -89,8 +92,9 @@ func (a AuthRepository) Authn(ctx context.Context, token string) (*model.UserSes
 		return nil, errors.NewInternalError(errors.AppError{
 			Message: dbErr.Error(),
 			Details: errors.AppErrorDetail{
-				ErrId:     "repository.auth.authn.exec_query",
 				Err:       err,
+				ErrReason: errors.ErrExecQueryReason,
+				ErrDomain: "repository.auth.authn",
 				RequestId: lib.FromContext(ctx, requestid.XRequestIDCtxKey{}).(string),
 			},
 		})
@@ -110,20 +114,35 @@ func (a AuthRepository) Authz(ctx context.Context, userId int64, service, method
 
 	sql, args, err := q.ToSql()
 	if err != nil {
-		a.logger.FromContext(ctx).Log.Error().Err(err).Msg(errors.ErrDatabaseBuildSql.Error())
-
-		return 0, 0, errors.ErrDatabaseInternalError
+		return 0, 0, errors.NewInternalError(errors.AppError{
+			Message: errors.ErrDatabaseInternalError.Error(),
+			Details: errors.AppErrorDetail{
+				Err:       err,
+				ErrReason: errors.ErrBuildQueryReason,
+				ErrDomain: "repository.auth.authz",
+				RequestId: lib.FromContext(ctx, requestid.XRequestIDCtxKey{}).(string),
+			},
+		})
 	}
 
 	if err := a.db.Pool.QueryRow(ctx, sql, args...).Scan(&endpoint, &permission); err != nil {
-		a.logger.FromContext(ctx).Log.Error().Err(err).Msg(errors.ErrDatabaseQueryRow.Error())
-
+		var dbErr error
 		switch {
 		case errors.Is(err, pgx.ErrNoRows):
-			return 0, 0, errors.ErrDatabaseRecordNotFound
+			dbErr = errors.ErrDatabaseRecordNotFound
 		default:
-			return 0, 0, errors.ErrDatabaseInternalError
+			dbErr = errors.ErrDatabaseInternalError
 		}
+
+		return 0, 0, errors.NewInternalError(errors.AppError{
+			Message: dbErr.Error(),
+			Details: errors.AppErrorDetail{
+				Err:       err,
+				ErrReason: errors.ErrExecQueryReason,
+				ErrDomain: "repository.auth.authz",
+				RequestId: lib.FromContext(ctx, requestid.XRequestIDCtxKey{}).(string),
+			},
+		})
 	}
 
 	return endpoint, permission, nil

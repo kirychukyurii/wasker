@@ -14,8 +14,9 @@ type AppError struct {
 }
 
 type AppErrorDetail struct {
-	ErrId     string `json:"id"`
 	Err       error  `json:"error"`
+	ErrDomain string `json:"domain"`
+	ErrReason string `json:"reason"`
 	RequestId string `json:"request_id"`
 }
 
@@ -43,8 +44,9 @@ func NewInternalError(appError AppError) *AppError {
 		Code:    codes.Internal,
 		Message: appError.Message,
 		Details: AppErrorDetail{
-			ErrId:     appError.Details.ErrId,
 			Err:       appError.Details.Err,
+			ErrDomain: appError.Details.ErrDomain,
+			ErrReason: appError.Details.ErrReason,
 			RequestId: appError.Details.RequestId,
 		},
 	}
@@ -55,8 +57,9 @@ func NewUnauthenticatedError(appError AppError) *AppError {
 		Code:    codes.Unauthenticated,
 		Message: appError.Message,
 		Details: AppErrorDetail{
-			ErrId:     appError.Details.ErrId,
 			Err:       appError.Details.Err,
+			ErrDomain: appError.Details.ErrDomain,
+			ErrReason: appError.Details.ErrReason,
 			RequestId: appError.Details.RequestId,
 		},
 	}
@@ -67,8 +70,9 @@ func NewForbiddenError(appError AppError) *AppError {
 		Code:    codes.PermissionDenied,
 		Message: appError.Message,
 		Details: AppErrorDetail{
-			ErrId:     appError.Details.ErrId,
 			Err:       appError.Details.Err,
+			ErrDomain: appError.Details.ErrDomain,
+			ErrReason: appError.Details.ErrReason,
 			RequestId: appError.Details.RequestId,
 		},
 	}
@@ -76,11 +80,12 @@ func NewForbiddenError(appError AppError) *AppError {
 
 func NewNotFoundError(appError AppError) *AppError {
 	return &AppError{
-		Code:    codes.Unimplemented,
+		Code:    codes.NotFound,
 		Message: appError.Message,
 		Details: AppErrorDetail{
-			ErrId:     appError.Details.ErrId,
 			Err:       appError.Details.Err,
+			ErrDomain: appError.Details.ErrDomain,
+			ErrReason: appError.Details.ErrReason,
 			RequestId: appError.Details.RequestId,
 		},
 	}
@@ -91,8 +96,9 @@ func NewBadRequestError(appError AppError) *AppError {
 		Code:    codes.Internal,
 		Message: appError.Message,
 		Details: AppErrorDetail{
-			ErrId:     appError.Details.ErrId,
 			Err:       appError.Details.Err,
+			ErrDomain: appError.Details.ErrDomain,
+			ErrReason: appError.Details.ErrReason,
 			RequestId: appError.Details.RequestId,
 		},
 	}

@@ -28,7 +28,6 @@ func NewUserController(userService service.UserService, logger log.Logger) UserC
 func (a UserController) ReadUser(ctx context.Context, request *pb.ReadUserRequest) (*pb.ReadUserResponse, error) {
 	u, err := a.userService.ReadUser(ctx, request.Id)
 	if err != nil {
-		a.logger.Log.Warn().Err(err).Msg("UserService method ReadUser()")
 		return nil, err
 	}
 

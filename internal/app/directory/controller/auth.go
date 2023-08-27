@@ -32,8 +32,9 @@ func (a AuthController) Login(ctx context.Context, request *pb.LoginRequest) (*p
 		return nil, errors.NewBadRequestError(errors.AppError{
 			Message: errors.ErrAuthInvalidCredentials.Error(),
 			Details: errors.AppErrorDetail{
-				ErrId:     "controller.auth.login.invalid",
 				Err:       errors.ErrAuthInvalidCredentials,
+				ErrReason: "INVALID_CREDENTIALS",
+				ErrDomain: "controller.auth.login",
 				RequestId: lib.FromContext(ctx, requestid.XRequestIDCtxKey{}).(string),
 			},
 		})

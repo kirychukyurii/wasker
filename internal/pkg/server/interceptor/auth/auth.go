@@ -67,8 +67,9 @@ func authFromMD(ctx context.Context, md []string, expectedScheme string) (string
 		return "", errors.NewUnauthenticatedError(errors.AppError{
 			Message: errors.ErrAuthAccessTokenIncorrect.Error(),
 			Details: errors.AppErrorDetail{
-				ErrId:     "interceptor.auth.from_metadata.null_metadata",
 				Err:       errors.ErrAuthAccessTokenIncorrect,
+				ErrReason: "NULL_METADATA",
+				ErrDomain: "interceptor.auth.from_metadata",
 				RequestId: lib.FromContext(ctx, requestid.XRequestIDCtxKey{}).(string),
 			},
 		})
@@ -78,8 +79,9 @@ func authFromMD(ctx context.Context, md []string, expectedScheme string) (string
 		return "", errors.NewUnauthenticatedError(errors.AppError{
 			Message: errors.ErrAuthAccessTokenIncorrect.Error(),
 			Details: errors.AppErrorDetail{
-				ErrId:     "interceptor.auth.from_metadata.empty_metadata",
 				Err:       errors.ErrAuthAccessTokenIncorrect,
+				ErrReason: "EMPTY_METADATA",
+				ErrDomain: "interceptor.auth.from_metadata",
 				RequestId: lib.FromContext(ctx, requestid.XRequestIDCtxKey{}).(string),
 			},
 		})
@@ -90,8 +92,9 @@ func authFromMD(ctx context.Context, md []string, expectedScheme string) (string
 		return "", errors.NewUnauthenticatedError(errors.AppError{
 			Message: errors.ErrAuthAccessTokenIncorrect.Error(),
 			Details: errors.AppErrorDetail{
-				ErrId:     "interceptor.auth.from_metadata.null_authorization",
 				Err:       errors.ErrAuthAccessTokenIncorrect,
+				ErrReason: "NULL_AUTHORIZATION_HEADER",
+				ErrDomain: "interceptor.auth.from_metadata",
 				RequestId: lib.FromContext(ctx, requestid.XRequestIDCtxKey{}).(string),
 			},
 		})
@@ -101,8 +104,9 @@ func authFromMD(ctx context.Context, md []string, expectedScheme string) (string
 		return "", errors.NewUnauthenticatedError(errors.AppError{
 			Message: errors.ErrAuthAccessTokenIncorrect.Error(),
 			Details: errors.AppErrorDetail{
-				ErrId:     "interceptor.auth.from_metadata.invalid_token_type",
 				Err:       errors.ErrAuthAccessTokenIncorrect,
+				ErrReason: "INVALID_TOKEN_TYPE",
+				ErrDomain: "interceptor.auth.from_metadata",
 				RequestId: lib.FromContext(ctx, requestid.XRequestIDCtxKey{}).(string),
 			},
 		})
